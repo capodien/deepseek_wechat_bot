@@ -3,7 +3,9 @@
 """
 Consolidated Card Processing Module (m_Card_Processing.py)
 
-This module consolidates six card processing functionalities:
+This module consolidates six card processing functionalities with a universal coordinate system:
+
+## Core Detector Classes:
 1. SimpleWidthDetector - Detects message card width boundaries
 2. RightBoundaryDetector - Enhanced right boundary detection
 3. CardAvatarDetector - Detects avatar positions within cards  
@@ -11,7 +13,108 @@ This module consolidates six card processing functionalities:
 5. ContactNameBoundaryDetector - Detects contact name boundaries
 6. TimeBoxDetector - Detects timestamp boundaries
 
-Each functionality is implemented as a separate class for modular usage.
+## Universal Coordinate System:
+
+### WeChatCoordinateContext Class:
+Unified coordinate management system that provides:
+- Standardized coordinate storage for all processing steps
+- OCR-ready region extraction with confidence scoring
+- Coordinate validation against image boundaries
+- Legacy format conversion for backward compatibility
+
+### Usage Patterns:
+
+#### Basic Usage (Legacy Compatible):
+```python
+# All existing code continues to work unchanged
+detector = SimpleWidthDetector()
+result = detector.detect_width("screenshot.png")  # Returns (left, right, width)
+
+avatars, info = CardAvatarDetector().detect_avatars("screenshot.png")
+cards, info = CardBoundaryDetector().detect_cards("screenshot.png")
+```
+
+#### Universal Coordinate System Usage:
+```python
+# Option 1: Let detectors create coordinate context automatically
+detector = SimpleWidthDetector()
+result, coord_context = detector.detect_width("screenshot.png", return_context=True)
+# coord_context now contains structured coordinate data
+
+# Option 2: Provide existing coordinate context for population
+coord_context = WeChatCoordinateContext("screenshot.png", (800, 600))
+result = detector.detect_width("screenshot.png", coord_context=coord_context)
+# coord_context is now populated with width boundaries
+
+# Option 3: Full pipeline with comprehensive coordinate structure
+results = process_screenshot_file("screenshot.png")
+coord_context = results["coordinate_context"]  # Complete coordinate structure
+ocr_regions = results["ocr_regions"]  # OCR-ready extraction regions
+```
+
+### Coordinate Context Structure:
+```python
+{
+    "image_metadata": {
+        "source_image": "screenshot.png",
+        "dimensions": {"width": 800, "height": 600},
+        "processing_timestamp": "20250905_143022"
+    },
+    "global_boundaries": {
+        "conversation_area": {
+            "bbox": [50, 0, 700, 600],  # [x, y, width, height]
+            "source_step": "SimpleWidthDetector.detect_width",
+            "confidence": 0.95
+        }
+    },
+    "cards": [
+        {
+            "card_id": 1,
+            "card_region": {"bbox": [100, 50, 600, 100], "confidence": 0.95},
+            "components": {
+                "avatar": {"bbox": [80, 70, 40, 40], "ocr_suitable": false},
+                "contact_name": {"bbox": [130, 60, 100, 20], "ocr_suitable": true, "expected_content": "contact_name"},
+                "timestamp": {"bbox": [500, 60, 80, 20], "ocr_suitable": true, "expected_content": "timestamp"}
+            }
+        }
+    ],
+    "ocr_extraction_regions": {
+        "contact_names": [{"card_id": 1, "bbox": [130, 60, 100, 20], "confidence": 0.85}],
+        "timestamps": [{"card_id": 1, "bbox": [500, 60, 80, 20], "confidence": 0.8}],
+        "messages": [],
+        "avatars": []
+    }
+}
+```
+
+### OCR Integration:
+```python
+# Extract OCR-ready regions by content type
+contact_name_regions = coord_context.extract_all_regions("contact_names")
+timestamp_regions = coord_context.extract_all_regions("timestamps")
+
+# Batch OCR processing using OCRExtractionUtils
+ocr_batch = OCRExtractionUtils.create_ocr_batch_from_context(
+    coord_context, "screenshot.png", ["contact_names", "timestamps"]
+)
+```
+
+### Validation:
+```python
+# Validate all coordinates against image boundaries
+validation_result = coord_context.validate_coordinates()
+if validation_result["errors"]:
+    print("Coordinate validation failed:", validation_result["errors"])
+```
+
+### Diagnostic Testing:
+Use the coordinate diagnostic server for testing and validation:
+```bash
+python coordinate_diagnostic_server.py
+# Visit http://localhost:5002 for web interface
+```
+
+Each detector class is implemented for modular usage with full backward compatibility.
 """
 
 import cv2
@@ -904,7 +1007,8 @@ class RightBoundaryDetector:
             print(f"  ⚠️ Could not generate horizontal differences heatmap: {e}")
             return ""
     
-    def detect_right_boundary(self, img: np.ndarray = None, img_width: int = None, preprocessed_image_path: str = None) -> int:
+    def detect_right_boundary(self, img: np.ndarray = None, img_width: int = None, 
+                              preprocessed_image_path: str = None, coord_context: 'WeChatCoordinateContext' = None) -> int:
         """
         Simplified right boundary detection using horizontal pixel difference visualization
         
@@ -918,6 +1022,7 @@ class RightBoundaryDetector:
             img: Original image (optional, used for fallback preprocessing)
             img_width: Width of the original image (optional)
             preprocessed_image_path: Path to preprocessed level-adjusted image
+            coord_context: Optional WeChatCoordinateContext to populate with results
             
         Returns:
             int: boundary_position_px
@@ -3319,15 +3424,19 @@ class TimeBoxDetector:
         self.K_MAD_TIMESTAMP = 1.0     # Lower threshold for timestamp region analysis
         self.K_MAD_TIMESTAMP_FALLBACK = 0.5  # More aggressive fallback for timestamps
         
-    def detect_time_boundaries(self, image_path: str) -> Tuple[List[Dict], Dict]:
+    def detect_time_boundaries(self, image_path: str, coord_context: 'WeChatCoordinateContext' = None,
+                               return_context: bool = False) -> Tuple[List[Dict], Dict]:
         """
         Detect timestamp boundaries using visual density patterns
         
         Args:
             image_path: Path to screenshot image
+            coord_context: Optional WeChatCoordinateContext to populate with results
+            return_context: If True, return ((cards, info), coord_context) instead of (cards, info)
             
         Returns:
-            Tuple of (enhanced_cards_with_times, detection_info)
+            - If return_context=False: Tuple of (enhanced_cards_with_times, detection_info)
+            - If return_context=True: ((enhanced_cards_with_times, detection_info), coord_context)
         """
         print(f"🎯 6. Time Box Detection: {os.path.basename(image_path)}")
         
@@ -3382,7 +3491,36 @@ class TimeBoxDetector:
         
         print(f"  ✅ Time boundary detection complete: {total_times_detected}/{len(cards)} cards have detected timestamps")
         
-        return enhanced_cards, detection_info
+        # Coordinate Context Integration
+        results_tuple = (enhanced_cards, detection_info)
+        
+        # Create or initialize coordinate context if needed
+        if return_context and coord_context is None:
+            img = cv2.imread(image_path)
+            if img is not None:
+                H, W = img.shape[:2]
+                coord_context = WeChatCoordinateContext(image_path, (W, H))
+        
+        # Populate coordinate context with timestamp data if provided
+        if coord_context is not None and enhanced_cards:
+            for card in enhanced_cards:
+                if "time_box" in card and card["time_box"]:
+                    card_id = card["card_id"]
+                    time_data = card["time_box"]
+                    time_bbox = time_data["bbox"]
+                    
+                    coord_context.add_component(
+                        card_id, "timestamp", time_bbox, 
+                        "TimeBoxDetector.detect_time_boundaries",
+                        time_data.get("density_score", 0.8),
+                        ocr_suitable=True, expected_content="timestamp"
+                    )
+        
+        # Return based on requested format
+        if return_context:
+            return results_tuple, coord_context
+        else:
+            return results_tuple
 
     def _detect_time_box_for_card(self, img: np.ndarray, card: Dict, x_panel_right: int) -> Dict:
         """
