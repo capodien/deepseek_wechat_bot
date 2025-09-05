@@ -1,0 +1,537 @@
+{
+  "timestamp": "2025-09-04T08:21:08.846790",
+  "source_screenshot": "accurate_avatar_detection_20250904_081934.png",
+  "total_cards": 22,
+  "cards_with_notifications": 4,
+  "cards_with_messages": 18,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        85,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        100,
+        40,
+        40
+      ],
+      "contact_name": "(",
+      "has_red_dot": true,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        130,
+        115
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        145,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        160,
+        40,
+        40
+      ],
+      "contact_name": "KK",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "与会信息。",
+      "timestamp": "3(",
+      "click_center": [
+        130,
+        175
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        205,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        220,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Service Accounts",
+      "timestamp": "",
+      "click_center": [
+        130,
+        235
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        265,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        280,
+        40,
+        40
+      ],
+      "contact_name": "中国民生银行:双卡在手",
+      "has_red_dot": true,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "最高得100元",
+      "click_center": [
+        130,
+        295
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        325,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        340,
+        40,
+        40
+      ],
+      "contact_name": "UfTlclal ACCoUnts",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "ROUITICatOn(S/ 冻圳洎伴肓",
+      "timestamp": "",
+      "click_center": [
+        130,
+        355
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        385,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        400,
+        40,
+        40
+      ],
+      "contact_name": "口;",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "hollo",
+      "timestamp": "",
+      "click_center": [
+        130,
+        415
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        445,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        460,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "YU Sally",
+      "timestamp": "",
+      "click_center": [
+        130,
+        475
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        505,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        520,
+        40,
+        40
+      ],
+      "contact_name": "没事没事",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        130,
+        535
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        565,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        580,
+        40,
+        40
+      ],
+      "contact_name": "Error 43",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "那些放在 GI hub 上的开源项目1",
+      "timestamp": "臂",
+      "click_center": [
+        130,
+        595
+      ]
+    },
+    {
+      "index": 9,
+      "bounds": [
+        0,
+        625,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        640,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "小写豕柳 @刀帅|",
+      "timestamp": "",
+      "click_center": [
+        130,
+        655
+      ]
+    },
+    {
+      "index": 10,
+      "bounds": [
+        0,
+        685,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        700,
+        40,
+        40
+      ],
+      "contact_name": "UIT TTUgTaNJ 刀川代",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "C623r4州 (53",
+      "timestamp": "",
+      "click_center": [
+        130,
+        715
+      ]
+    },
+    {
+      "index": 11,
+      "bounds": [
+        0,
+        745,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        760,
+        40,
+        40
+      ],
+      "contact_name": "你看看哪里同音系练的",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "1",
+      "timestamp": "士{7UI+",
+      "click_center": [
+        130,
+        775
+      ]
+    },
+    {
+      "index": 12,
+      "bounds": [
+        0,
+        805,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        820,
+        40,
+        40
+      ],
+      "contact_name": "深圳资讯福利社-予",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "深圳]",
+      "timestamp": "息通",
+      "click_center": [
+        130,
+        835
+      ]
+    },
+    {
+      "index": 13,
+      "bounds": [
+        0,
+        865,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        880,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "甜蜜蜜",
+      "timestamp": "",
+      "click_center": [
+        130,
+        895
+      ]
+    },
+    {
+      "index": 14,
+      "bounds": [
+        0,
+        925,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        940,
+        40,
+        40
+      ],
+      "contact_name": "[Audio] 6\"",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "(",
+      "timestamp": "",
+      "click_center": [
+        130,
+        955
+      ]
+    },
+    {
+      "index": 15,
+      "bounds": [
+        0,
+        985,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1000,
+        40,
+        40
+      ],
+      "contact_name": "0311111ke百旧",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "1CC1a",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1015
+      ]
+    },
+    {
+      "index": 16,
+      "bounds": [
+        0,
+        1045,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1060,
+        40,
+        40
+      ],
+      "contact_name": "Minimized GrOUDe",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "明亮2栋106-猪脚饭外卖群:  碓",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1075
+      ]
+    },
+    {
+      "index": 17,
+      "bounds": [
+        0,
+        1105,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1120,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "乐嵩格干饭群",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1135
+      ]
+    },
+    {
+      "index": 18,
+      "bounds": [
+        0,
+        1165,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1180,
+        40,
+        40
+      ],
+      "contact_name": "JASPER: 太操心了",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1195
+      ]
+    },
+    {
+      "index": 19,
+      "bounds": [
+        0,
+        1225,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1240,
+        40,
+        40
+      ],
+      "contact_name": "豕国 Genkinno 泳池",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "丐~唔~UI志强 泰国: [Stlcke",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1255
+      ]
+    },
+    {
+      "index": 20,
+      "bounds": [
+        0,
+        1285,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        1300,
+        40,
+        40
+      ],
+      "contact_name": "7(",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "2仨 {几T0# e 八』",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1315
+      ]
+    },
+    {
+      "index": 21,
+      "bounds": [
+        0,
+        1345,
+        480,
+        70
+      ],
+      "avatar_bounds": [
+        40,
+        1360,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "京投发展公园悦府 区3r",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1380
+      ]
+    }
+  ]
+}

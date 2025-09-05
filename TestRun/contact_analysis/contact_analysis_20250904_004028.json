@@ -1,0 +1,807 @@
+{
+  "timestamp": "2025-09-04T00:40:28.893556",
+  "source_screenshot": "diagnostic_test_20250904_004017.png",
+  "total_cards": 19,
+  "cards_with_red_dots": 2,
+  "cards_with_messages": 13,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        60,
+        101,
+        382,
+        61
+      ],
+      "contact_name": "[Draft] VVV 坐",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        131
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "bounds": [
+        60,
+        162,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        192
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "bounds": [
+        60,
+        223,
+        382,
+        61
+      ],
+      "contact_name": "Dia  OI",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        253
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "bounds": [
+        60,
+        284,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        314
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "bounds": [
+        60,
+        345,
+        382,
+        61
+      ],
+      "contact_name": "[1 notification(s)] 深圳湾体育中心: hi, 谢~",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        375
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "bounds": [
+        60,
+        406,
+        382,
+        61
+      ],
+      "contact_name": "SerVICe ACCounts",
+      "has_red_dot": true,
+      "has_message": true,
+      "click_center": [
+        180,
+        436
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "bounds": [
+        60,
+        467,
+        382,
+        61
+      ],
+      "contact_name": "C1!",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        497
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "bounds": [
+        60,
+        528,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        558
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 8,
+      "bounds": [
+        60,
+        589,
+        382,
+        61
+      ],
+      "contact_name": "那些放在G1 hub 上的开源项目估计都收到了{",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        619
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 9,
+      "bounds": [
+        60,
+        650,
+        382,
+        61
+      ],
+      "contact_name": "小管家小小柳 @万师傅",
+      "has_red_dot": true,
+      "has_message": true,
+      "click_center": [
+        180,
+        680
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 10,
+      "bounds": [
+        60,
+        711,
+        382,
+        61
+      ],
+      "contact_name": ">4",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        741
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 11,
+      "bounds": [
+        60,
+        772,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        802
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 12,
+      "bounds": [
+        60,
+        833,
+        382,
+        61
+      ],
+      "contact_name": "深圳]",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        863
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 13,
+      "bounds": [
+        60,
+        894,
+        382,
+        61
+      ],
+      "contact_name": "甜蜜鳘",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        924
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 14,
+      "bounds": [
+        60,
+        955,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        985
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 15,
+      "bounds": [
+        60,
+        1016,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        1046
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 16,
+      "bounds": [
+        60,
+        1077,
+        382,
+        61
+      ],
+      "contact_name": "明亮2栋106-猪脚饭外卖群: 确认了",
+      "has_red_dot": false,
+      "has_message": false,
+      "click_center": [
+        180,
+        1107
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 17,
+      "bounds": [
+        60,
+        1138,
+        382,
+        61
+      ],
+      "contact_name": "乐嵩格干饭群",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        1168
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    },
+    {
+      "index": 18,
+      "bounds": [
+        60,
+        1199,
+        382,
+        61
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "click_center": [
+        180,
+        1229
+      ],
+      "regions": {
+        "avatar": [
+          12,
+          5,
+          50,
+          50
+        ],
+        "name": [
+          70,
+          5,
+          302,
+          30
+        ],
+        "message": [
+          70,
+          30,
+          302,
+          25
+        ],
+        "red_dot": [
+          0,
+          0,
+          32,
+          61
+        ]
+      }
+    }
+  ]
+}

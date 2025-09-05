@@ -1,0 +1,225 @@
+{
+  "timestamp": "2025-09-04T01:06:27.899557",
+  "source_screenshot": "diagnostic_test_20250904_010327.png",
+  "total_cards": 9,
+  "cards_with_notifications": 1,
+  "cards_with_messages": 9,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        215,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        230,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "RO_UIO",
+      "timestamp": "",
+      "click_center": [
+        130,
+        260
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        455,
+        480,
+        80
+      ],
+      "avatar_bounds": [
+        40,
+        470,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "YU Sally",
+      "timestamp": "",
+      "click_center": [
+        130,
+        495
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        535,
+        480,
+        80
+      ],
+      "avatar_bounds": [
+        40,
+        550,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Error 43 Illegalassignr",
+      "timestamp": "",
+      "click_center": [
+        130,
+        575
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        615,
+        480,
+        80
+      ],
+      "avatar_bounds": [
+        40,
+        630,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "小管家小柳 @万师傅",
+      "timestamp": "",
+      "click_center": [
+        130,
+        655
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        695,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        710,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Oscar@深圳 Oscar",
+      "timestamp": "",
+      "click_center": [
+        130,
+        740
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        865,
+        480,
+        80
+      ],
+      "avatar_bounds": [
+        40,
+        880,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "甜蜜蜜",
+      "timestamp": "",
+      "click_center": [
+        130,
+        905
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        945,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        960,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Genkinno 泰国售后",
+      "timestamp": "",
+      "click_center": [
+        130,
+        990
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        1115,
+        480,
+        80
+      ],
+      "avatar_bounds": [
+        40,
+        1130,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "朱高g十饭群",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1155
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        1195,
+        480,
+        70
+      ],
+      "avatar_bounds": [
+        40,
+        1210,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "国Genkinno 泳池机淼",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1230
+      ]
+    }
+  ]
+}

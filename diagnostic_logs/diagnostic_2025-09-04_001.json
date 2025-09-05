@@ -1,0 +1,642 @@
+[
+  {
+    "timestamp": "2025-09-04T19:48:31.021906",
+    "event_type": "workflow_start",
+    "module": "example_complete_workflow",
+    "data": {
+      "workflow": "message_response_cycle",
+      "steps": 4
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022120",
+    "event_type": "screenshot",
+    "module": "example_avatar_detection",
+    "data": {
+      "action": "capture_wechat_window",
+      "target": "contact_list"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022134",
+    "event_type": "detection",
+    "module": "example_avatar_detection",
+    "data": {
+      "detections": [
+        {
+          "bbox": [
+            100,
+            150,
+            150,
+            200
+          ],
+          "center": [
+            125,
+            175
+          ],
+          "click_pos": [
+            130,
+            180
+          ],
+          "label": "Contact #1",
+          "confidence": 0.95
+        },
+        {
+          "bbox": [
+            100,
+            220,
+            150,
+            270
+          ],
+          "center": [
+            125,
+            245
+          ],
+          "click_pos": [
+            130,
+            250
+          ],
+          "label": "Contact #2",
+          "confidence": 0.87
+        }
+      ],
+      "overlay": null,
+      "method": "opencv_adaptive",
+      "algorithm": "threshold_contour_analysis"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022143",
+    "event_type": "performance",
+    "module": "example_avatar_detection",
+    "data": {
+      "operation": "avatar_detection",
+      "detections_found": 2,
+      "avg_confidence": 0.9099999999999999
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.2167224884033203
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022168",
+    "event_type": "detection",
+    "module": "example_message_detection",
+    "data": {
+      "detections": [
+        {
+          "bbox": [
+            300,
+            150,
+            320,
+            170
+          ],
+          "center": [
+            310,
+            160
+          ],
+          "label": "New Message",
+          "confidence": 0.94,
+          "color_match": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        },
+        {
+          "bbox": [
+            300,
+            250,
+            320,
+            270
+          ],
+          "center": [
+            310,
+            260
+          ],
+          "label": "Unread Count: 2",
+          "confidence": 0.89,
+          "color_match": {
+            "r": 240,
+            "g": 10,
+            "b": 5
+          }
+        }
+      ],
+      "overlay": null,
+      "detection_method": "color_threshold",
+      "red_threshold": 200,
+      "total_scanned_pixels": 2073600
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022172",
+    "event_type": "performance",
+    "module": "example_message_detection",
+    "data": {
+      "operation": "red_dot_detection",
+      "messages_found": 2,
+      "scan_resolution": "1920x1080"
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.015735626220703125
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.022178",
+    "event_type": "click",
+    "module": "example_gui_automation",
+    "data": {
+      "action": "click_contact",
+      "coordinates": [
+        150,
+        200
+      ],
+      "button": "left",
+      "duration": "single_click"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.123000",
+    "event_type": "performance",
+    "module": "example_gui_automation",
+    "data": {
+      "operation": "mouse_click",
+      "coordinates": [
+        150,
+        200
+      ],
+      "success": true
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 100.81100463867188
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.123078",
+    "event_type": "ocr",
+    "module": "example_ocr",
+    "data": {
+      "text": "这是一条测试消息\nHello World\n如何使用OCR",
+      "text_regions": [
+        {
+          "bbox": [
+            50,
+            100,
+            200,
+            130
+          ],
+          "text": "这是一条测试消息",
+          "confidence": 0.95,
+          "label": "Chinese Text"
+        },
+        {
+          "bbox": [
+            50,
+            140,
+            150,
+            170
+          ],
+          "text": "Hello World",
+          "confidence": 0.98,
+          "label": "English Text"
+        },
+        {
+          "bbox": [
+            50,
+            180,
+            180,
+            210
+          ],
+          "text": "如何使用OCR",
+          "confidence": 0.87,
+          "label": "Chinese Text"
+        }
+      ],
+      "language_detected": [
+        "zh",
+        "en"
+      ],
+      "processing_method": "easyocr",
+      "confidence": 0.92
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.123092",
+    "event_type": "performance",
+    "module": "example_ocr",
+    "data": {
+      "operation": "text_extraction",
+      "characters_extracted": 28,
+      "text_regions_found": 3
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.0457763671875
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:48:31.123099",
+    "event_type": "workflow_complete",
+    "module": "example_complete_workflow",
+    "data": {
+      "workflow": "message_response_cycle",
+      "steps_completed": 4,
+      "results": {
+        "avatars_found": 2,
+        "messages_found": 2,
+        "click_successful": true,
+        "text_extracted": 28
+      }
+    },
+    "visual_output": null,
+    "metrics": {
+      "total_duration_ms": 101.19819641113281
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844262",
+    "event_type": "workflow_start",
+    "module": "example_complete_workflow",
+    "data": {
+      "workflow": "message_response_cycle",
+      "steps": 4
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844481",
+    "event_type": "screenshot",
+    "module": "example_avatar_detection",
+    "data": {
+      "action": "capture_wechat_window",
+      "target": "contact_list"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844511",
+    "event_type": "detection",
+    "module": "example_avatar_detection",
+    "data": {
+      "detections": [
+        {
+          "bbox": [
+            100,
+            150,
+            150,
+            200
+          ],
+          "center": [
+            125,
+            175
+          ],
+          "click_pos": [
+            130,
+            180
+          ],
+          "label": "Contact #1",
+          "confidence": 0.95
+        },
+        {
+          "bbox": [
+            100,
+            220,
+            150,
+            270
+          ],
+          "center": [
+            125,
+            245
+          ],
+          "click_pos": [
+            130,
+            250
+          ],
+          "label": "Contact #2",
+          "confidence": 0.87
+        }
+      ],
+      "overlay": null,
+      "method": "opencv_adaptive",
+      "algorithm": "threshold_contour_analysis"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844519",
+    "event_type": "performance",
+    "module": "example_avatar_detection",
+    "data": {
+      "operation": "avatar_detection",
+      "detections_found": 2,
+      "avg_confidence": 0.9099999999999999
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.23126602172851562
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844535",
+    "event_type": "detection",
+    "module": "example_message_detection",
+    "data": {
+      "detections": [
+        {
+          "bbox": [
+            300,
+            150,
+            320,
+            170
+          ],
+          "center": [
+            310,
+            160
+          ],
+          "label": "New Message",
+          "confidence": 0.94,
+          "color_match": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        },
+        {
+          "bbox": [
+            300,
+            250,
+            320,
+            270
+          ],
+          "center": [
+            310,
+            260
+          ],
+          "label": "Unread Count: 2",
+          "confidence": 0.89,
+          "color_match": {
+            "r": 240,
+            "g": 10,
+            "b": 5
+          }
+        }
+      ],
+      "overlay": null,
+      "detection_method": "color_threshold",
+      "red_threshold": 200,
+      "total_scanned_pixels": 2073600
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844539",
+    "event_type": "performance",
+    "module": "example_message_detection",
+    "data": {
+      "operation": "red_dot_detection",
+      "messages_found": 2,
+      "scan_resolution": "1920x1080"
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.008344650268554688
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.844545",
+    "event_type": "click",
+    "module": "example_gui_automation",
+    "data": {
+      "action": "click_contact",
+      "coordinates": [
+        150,
+        200
+      ],
+      "button": "left",
+      "duration": "single_click"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.947113",
+    "event_type": "performance",
+    "module": "example_gui_automation",
+    "data": {
+      "operation": "mouse_click",
+      "coordinates": [
+        150,
+        200
+      ],
+      "success": true
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 102.5538444519043
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.947194",
+    "event_type": "ocr",
+    "module": "example_ocr",
+    "data": {
+      "text": "这是一条测试消息\nHello World\n如何使用OCR",
+      "text_regions": [
+        {
+          "bbox": [
+            50,
+            100,
+            200,
+            130
+          ],
+          "text": "这是一条测试消息",
+          "confidence": 0.95,
+          "label": "Chinese Text"
+        },
+        {
+          "bbox": [
+            50,
+            140,
+            150,
+            170
+          ],
+          "text": "Hello World",
+          "confidence": 0.98,
+          "label": "English Text"
+        },
+        {
+          "bbox": [
+            50,
+            180,
+            180,
+            210
+          ],
+          "text": "如何使用OCR",
+          "confidence": 0.87,
+          "label": "Chinese Text"
+        }
+      ],
+      "language_detected": [
+        "zh",
+        "en"
+      ],
+      "processing_method": "easyocr",
+      "confidence": 0.92
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.947206",
+    "event_type": "performance",
+    "module": "example_ocr",
+    "data": {
+      "operation": "text_extraction",
+      "characters_extracted": 28,
+      "text_regions_found": 3
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.03409385681152344
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T19:52:22.947212",
+    "event_type": "workflow_complete",
+    "module": "example_complete_workflow",
+    "data": {
+      "workflow": "message_response_cycle",
+      "steps_completed": 4,
+      "results": {
+        "avatars_found": 2,
+        "messages_found": 2,
+        "click_successful": true,
+        "text_extracted": 28
+      }
+    },
+    "visual_output": null,
+    "metrics": {
+      "total_duration_ms": 102.96201705932617
+    },
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T20:20:38.910021",
+    "event_type": "screenshot",
+    "module": "example_avatar_detection",
+    "data": {
+      "action": "capture_wechat_window",
+      "target": "contact_list"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T20:20:38.910045",
+    "event_type": "detection",
+    "module": "example_avatar_detection",
+    "data": {
+      "detections": [
+        {
+          "bbox": [
+            100,
+            150,
+            150,
+            200
+          ],
+          "center": [
+            125,
+            175
+          ],
+          "click_pos": [
+            130,
+            180
+          ],
+          "label": "Contact #1",
+          "confidence": 0.95
+        },
+        {
+          "bbox": [
+            100,
+            220,
+            150,
+            270
+          ],
+          "center": [
+            125,
+            245
+          ],
+          "click_pos": [
+            130,
+            250
+          ],
+          "label": "Contact #2",
+          "confidence": 0.87
+        }
+      ],
+      "overlay": null,
+      "method": "opencv_adaptive",
+      "algorithm": "threshold_contour_analysis"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-04T20:20:38.910052",
+    "event_type": "performance",
+    "module": "example_avatar_detection",
+    "data": {
+      "operation": "avatar_detection",
+      "detections_found": 2,
+      "avg_confidence": 0.9099999999999999
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 0.04601478576660156
+    },
+    "status": "success"
+  }
+]

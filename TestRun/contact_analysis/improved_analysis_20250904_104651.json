@@ -1,0 +1,369 @@
+{
+  "timestamp": "2025-09-04T10:46:51.189031",
+  "source_screenshot": "opencv_adaptive_result_20250904_104644.png",
+  "total_cards": 15,
+  "cards_with_notifications": 13,
+  "cards_with_messages": 13,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        85,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        100,
+        40,
+        40
+      ],
+      "contact_name": "(",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "utg5",
+      "timestamp": "",
+      "click_center": [
+        130,
+        115
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        145,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        160,
+        40,
+        40
+      ],
+      "contact_name": "KK",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "与会信息.",
+      "timestamp": "3(",
+      "click_center": [
+        130,
+        175
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        205,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        220,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "深圳资讯福利社-予以",
+      "timestamp": "",
+      "click_center": [
+        130,
+        235
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        265,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        280,
+        40,
+        40
+      ],
+      "contact_name": "深圳]",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        130,
+        295
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        325,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        340,
+        40,
+        40
+      ],
+      "contact_name": "UtTlclal ACCoUnts",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "ROUITICatOn(S/ 冻圳洎伴肓",
+      "timestamp": "",
+      "click_center": [
+        130,
+        355
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        385,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        400,
+        40,
+        40
+      ],
+      "contact_name": "C1!",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Iieo C3l",
+      "timestamp": "",
+      "click_center": [
+        130,
+        415
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        445,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        460,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Service Accounts",
+      "timestamp": "",
+      "click_center": [
+        130,
+        475
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        505,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        520,
+        40,
+        40
+      ],
+      "contact_name": "浦发银行信用卡:能花会",
+      "has_red_dot": true,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "享\"竿竿返\"",
+      "click_center": [
+        130,
+        535
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        565,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        580,
+        40,
+        40
+      ],
+      "contact_name": "Rio_Old",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "hello",
+      "timestamp": "",
+      "click_center": [
+        130,
+        595
+      ]
+    },
+    {
+      "index": 9,
+      "bounds": [
+        0,
+        625,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        640,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "CTOT 43 IeOalaSSIgTI",
+      "timestamp": "",
+      "click_center": [
+        130,
+        655
+      ]
+    },
+    {
+      "index": 10,
+      "bounds": [
+        0,
+        685,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        700,
+        40,
+        40
+      ],
+      "contact_name": "邡学似仕 OI TU JIf",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "小筲I小柳 O|佃",
+      "timestamp": "以划",
+      "click_center": [
+        130,
+        715
+      ]
+    },
+    {
+      "index": 11,
+      "bounds": [
+        0,
+        745,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        760,
+        40,
+        40
+      ],
+      "contact_name": "[Nln Proaraml 万l但",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "0",
+      "timestamp": "",
+      "click_center": [
+        130,
+        775
+      ]
+    },
+    {
+      "index": 12,
+      "bounds": [
+        0,
+        805,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        820,
+        40,
+        40
+      ],
+      "contact_name": "Oscar@深圳 Osca",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "你 哪里同意系统的 些条款",
+      "timestamp": "Yes",
+      "click_center": [
+        130,
+        835
+      ]
+    },
+    {
+      "index": 13,
+      "bounds": [
+        0,
+        865,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        40,
+        880,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "甜蜜蜜",
+      "timestamp": "",
+      "click_center": [
+        130,
+        895
+      ]
+    },
+    {
+      "index": 14,
+      "bounds": [
+        0,
+        925,
+        480,
+        70
+      ],
+      "avatar_bounds": [
+        40,
+        940,
+        40,
+        40
+      ],
+      "contact_name": "[Audio] 6\"",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "(",
+      "timestamp": "",
+      "click_center": [
+        130,
+        960
+      ]
+    }
+  ]
+}

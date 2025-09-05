@@ -22,11 +22,10 @@ perf_stats = {
 # 在文件开头加载.env文件
 load_dotenv()
 message_table = {}
-my_model = 'deepseek-chat'  # 修改模型名称
+my_model = 'gpt-4o-mini'  # OpenAI model
 
 client = OpenAI(
-    base_url='https://api.deepseek.com',  # 修改API地址
-    api_key=os.getenv("DEEPSEEK_API_KEY")  # 替换为真实API密钥
+    api_key=os.getenv("OPENAI_API_KEY")  # OpenAI API key
 )
 
 def add_user(user_name):
@@ -48,7 +47,7 @@ def clean_response(content):
     content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
     return content.strip()
 
-def reply(user, msg):
+def reply(user, msg, safe_mode=True):
     """带流式响应耗时分析的对话处理"""
     total_start = perf_counter()
     time_stats = {
@@ -75,7 +74,7 @@ def reply(user, msg):
             messages=thisMsg,
             temperature=0.5,
             top_p=0.7,
-            max_tokens=384,
+            max_completion_tokens=384,
             stream=True,
             stream_options={
                 "include_usage": False  # 减少返回元数据
@@ -102,7 +101,10 @@ def reply(user, msg):
                 else:
                     raise Exception("Unsupported OS")
         time_stats['stream_receive'] = perf_counter() - stream_start
-        pyautogui.press('enter')
+        
+        # 只有在非安全模式下才按回车发送消息
+        if not safe_mode:
+            pyautogui.press('enter')
 
         # 内容清洗耗时
         clean_start = perf_counter()

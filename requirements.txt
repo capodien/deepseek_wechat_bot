@@ -1,6 +1,10 @@
 pyautogui
-np
+numpy
 opencv-python
 easyocr
 openai
 dotenv
+pynput
+flask
+flask-socketio
+psutil

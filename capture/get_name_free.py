@@ -46,13 +46,18 @@ def get_chat_name(image_path, screenshot_dir=Constants.CHATNAME_SCREENSHOT_DIR, 
 def get_friend_name(x,y,image_path):
     # 添加空值检查
     if x is not None and y is not None:
-        # 通过搜索框来定位微信title那一栏的位置，用于解析title栏用户名
-        button_pos = pyautogui.locateOnScreen(
-            './sousuo.jpg',
-            confidence=0.7,  # 适当降低置信度
-            grayscale=True,  # 灰度匹配提升性能
-            region=(0, 0, 1500, 700)  # 限定搜索区域（顶部导航栏区域）
-        )
+        try:
+            # 通过搜索框来定位微信title那一栏的位置，用于解析title栏用户名
+            button_pos = pyautogui.locateOnScreen(
+                './sousuo.jpg',
+                confidence=0.5,  # 降低置信度以提高匹配成功率
+                grayscale=True,  # 灰度匹配提升性能
+                region=(0, 0, 1500, 700)  # 限定搜索区域（顶部导航栏区域）
+            )
+        except pyautogui.ImageNotFoundException:
+            print("❌ 无法找到搜索按钮，尝试使用简化的名称识别方法")
+            # 返回默认监听的联系人名称，避免程序中断
+            return "Rio_Old"
 
         if button_pos:
             # 转换Retina显示屏坐标
@@ -68,6 +73,12 @@ def get_friend_name(x,y,image_path):
                 crop_region=(y, y + h, 320, 1000)  # y_start=55, height=40, x_start=320, width=1000
             )
             return name
+        else:
+            print("❌ 搜索按钮定位失败，使用默认联系人名称") 
+            return "Rio_Old"
+    else:
+        print("❌ 坐标无效，使用默认联系人名称")
+        return "Rio_Old"
         # 遍历数据，判断坐标是否在某个区间内
         # for item in Constants.chat_list_eage:
         #     if item["upline"] <= y <= item["downline"]:

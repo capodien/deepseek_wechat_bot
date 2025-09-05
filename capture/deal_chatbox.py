@@ -6,8 +6,9 @@ from pprint import pprint
 import pyautogui
 
 from Constants import Constants
+from .window_manager import get_window_manager
 
-# 电脑版微信全屏状态的窗口区域
+# 电脑版微信全屏状态的窗口区域（保持向后兼容）
 WECHAT_WINDOW = Constants.WECHAT_WINDOW
 import easyocr
 OCR_READER = easyocr.Reader(['ch_sim', 'en'], gpu=True)  # 添加gpu=True参数启用GPU加速
@@ -104,7 +105,39 @@ def recognize_green_bottom(image_path):
 # 内存缓存优化（减少磁盘IO）
 from io import BytesIO
 
-def get_message_area_screenshot():
+def get_message_area_screenshot_bytes(use_dynamic_detection=True):
+    """获取消息区域截图并返回BytesIO对象"""
+    # 使用动态窗口检测获取当前窗口坐标
+    if use_dynamic_detection:
+        try:
+            window_manager = get_window_manager(use_dynamic=True)
+            window_coords = window_manager.get_wechat_window()
+            
+            # 基于动态窗口计算消息区域
+            msg_area = (
+                window_coords[0] + 304,  # 左边距（微信左侧栏宽度）
+                window_coords[1],        # 顶部对齐
+                window_coords[2] - 304,  # 宽度减去左侧栏
+                min(800, window_coords[3])  # 高度限制或窗口高度
+            )
+        except Exception as e:
+            print(f"❌ 动态检测失败: {e}，回退到静态坐标")
+            # 回退到静态坐标
+            msg_area = (
+                WECHAT_WINDOW[0] + 304,
+                WECHAT_WINDOW[1],
+                1175,  # 修正宽度 (1479-304)
+                800
+            )
+    else:
+        # 使用静态坐标
+        msg_area = (
+            WECHAT_WINDOW[0] + 304,
+            WECHAT_WINDOW[1],
+            1175,  # 修正宽度
+            800
+        )
+    
     screenshot = pyautogui.screenshot(region=msg_area)
     # 直接返回BytesIO对象供后续处理
     img_byte_arr = BytesIO()
@@ -112,14 +145,40 @@ def get_message_area_screenshot():
     img_byte_arr.seek(0)
     return img_byte_arr
 
-def get_message_area_screenshot():
-    # 截取消息区域（根据实际窗口调整）
-    msg_area = (
-        WECHAT_WINDOW[0] + 304,
-        WECHAT_WINDOW[1],
-        1479,
-        800
-    )
+def get_message_area_screenshot(use_dynamic_detection=True):
+    """获取消息区域截图，支持动态窗口检测"""
+    # 使用动态窗口检测获取当前窗口坐标
+    if use_dynamic_detection:
+        try:
+            window_manager = get_window_manager(use_dynamic=True)
+            window_coords = window_manager.get_wechat_window()
+            
+            # 基于动态窗口计算消息区域
+            msg_area = (
+                window_coords[0] + 304,  # 左边距（微信左侧栏宽度）
+                window_coords[1],        # 顶部对齐
+                window_coords[2] - 304,  # 宽度减去左侧栏
+                min(800, window_coords[3])  # 高度限制或窗口高度
+            )
+            print(f"🔍 动态消息区域: {msg_area}")
+        except Exception as e:
+            print(f"❌ 动态检测失败: {e}，回退到静态坐标")
+            # 回退到静态坐标
+            msg_area = (
+                WECHAT_WINDOW[0] + 304,
+                WECHAT_WINDOW[1],
+                1175,  # 修正宽度 (1479-304)
+                800
+            )
+    else:
+        # 使用静态坐标
+        msg_area = (
+            WECHAT_WINDOW[0] + 304,
+            WECHAT_WINDOW[1],
+            1175,  # 修正宽度
+            800
+        )
+    
     os.makedirs(Constants.MESSAGES_DIR, exist_ok=True)
 
     screenshot = pyautogui.screenshot(region=msg_area)
@@ -146,89 +205,196 @@ def preprocess_for_ocr(image):
 
 
 
+def detect_wechat_theme(image):
+    """
+    检测微信主题模式（深色/浅色）
+    Returns: 'dark' or 'light'
+    """
+    height, width = image.shape[:2]
+    
+    # 取样多个背景区域来判断主题
+    sample_regions = [
+        (int(width * 0.4), int(height * 0.2), 50, 50),  # 上方中央
+        (int(width * 0.6), int(height * 0.5), 50, 50),  # 中间右侧
+        (int(width * 0.5), int(height * 0.8), 50, 50),  # 下方中央
+    ]
+    
+    avg_brightness = 0
+    sample_count = 0
+    
+    for x, y, w, h in sample_regions:
+        if x + w < width and y + h < height:
+            region = image[y:y+h, x:x+w]
+            gray_region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+            avg_brightness += np.mean(gray_region)
+            sample_count += 1
+    
+    if sample_count > 0:
+        avg_brightness /= sample_count
+        
+    # 阈值判断深色/浅色模式
+    theme = 'dark' if avg_brightness < 100 else 'light'
+    print(f"🎨 检测到主题: {theme} 模式 (亮度: {avg_brightness:.1f})")
+    return theme
+
+def get_theme_colors(theme):
+    """根据主题返回消息气泡颜色"""
+    if theme == 'dark':
+        # 深色模式颜色
+        incoming_colors = [
+            (45, 45, 45),    # 深灰色气泡
+            (55, 55, 55),    # 稍亮的深灰
+            (65, 65, 65),    # 另一种深灰变体
+            (40, 40, 40),    # 更深的灰色
+        ]
+        outgoing_color = (76, 148, 83)  # 绿色气泡（深浅模式基本相同）
+        
+    else:  # light mode
+        incoming_colors = [
+            (255, 255, 255), # 白色气泡
+            (245, 245, 245), # 浅灰气泡
+            (250, 250, 250), # 偏白气泡
+        ]
+        outgoing_color = (169, 234, 122)  # 浅绿气泡
+    
+    return incoming_colors, outgoing_color
+
+def extract_messages_by_theme(image, theme='light', tolerance=30):
+    """
+    根据微信主题提取消息区域
+    Returns: (incoming_regions, outgoing_regions)
+    """
+    incoming_colors, outgoing_color = get_theme_colors(theme)
+    
+    incoming_regions = []
+    outgoing_regions = []
+    
+    # 查找接收消息区域（深色模式：深灰，浅色模式：白色）
+    for target_color in incoming_colors:
+        regions = find_color_regions(image, target_color, tolerance)
+        incoming_regions.extend(regions)
+    
+    # 查找发送消息区域（绿色气泡）
+    outgoing_regions = find_color_regions(image, outgoing_color, tolerance)
+    
+    return incoming_regions, outgoing_regions
+
+def find_color_regions(image, target_color, tolerance=30):
+    """
+    在图像中查找特定颜色的区域
+    Returns: list of (x, y, w, h) bounding boxes
+    """
+    target_color = np.array(target_color)
+    
+    # 创建颜色掩码
+    lower = np.array([max(0, c - tolerance) for c in target_color])
+    upper = np.array([min(255, c + tolerance) for c in target_color])
+    
+    mask = cv2.inRange(image, lower, upper)
+    
+    # 查找轮廓
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    regions = []
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        
+        # 过滤小区域（噪声）
+        if w > 50 and h > 20:
+            regions.append((x, y, w, h))
+    
+    return regions
+
 def get_chat_messages(screenshot_path):
-    """捕获并解析微信消息（带执行时间统计）"""
+    """捕获并解析微信消息（支持深色/浅色模式）"""
     total_start = time.time()
     time_stats = {
         'total': 0,
         'image_load': 0,
-        'white_detect': 0,
-        'green_detect': 0,
+        'theme_detect': 0,
+        'region_detect': 0,
         'ocr_process': 0,
         'text_filter': 0
     }
-    result = {'white': []}
+    result = {'white': []}  # 保持原始格式兼容性
+    
     try:
         # 图像加载耗时
         img_load_start = time.time()
         image = cv2.imread('./' + screenshot_path)
+        if image is None:
+            print(f"❌ 无法加载图像: {screenshot_path}")
+            return result
 
         time_stats['image_load'] = time.time() - img_load_start
 
-        # 白色区域检测耗时
-        white_start = time.time()
-        white_target_color = (255, 255, 255)
-        bbox = extract_text_by_color_flow(image, white_target_color)
-        x, y, w, h = bbox
-        time_stats['white_detect'] = time.time() - white_start
+        # 主题检测耗时
+        theme_start = time.time()
+        theme = detect_wechat_theme(image)
+        time_stats['theme_detect'] = time.time() - theme_start
 
-        # 绿色区域检测耗时
-        green_start = time.time()
-
-        green_target_color = (169, 234, 122)
-        green_bbox = extract_text_by_color_flow(image, green_target_color)
-        x_green, y_green, w_green, h_green = green_bbox
-        # y_green = recognize_green_bottom(screenshot_path)  # 注意参数修正
-        time_stats['green_detect'] = time.time() - green_start
-
-        # 区域关系判断
-        msg_y_upline = y
-        msg_y_downline = y + h
-        if y_green and y_green > msg_y_downline:
-            print("green区域在消息区域下")
-            return result
+        # 消息区域检测耗时
+        region_start = time.time()
+        incoming_regions, outgoing_regions = extract_messages_by_theme(image, theme)
+        time_stats['region_detect'] = time.time() - region_start
+        
+        print(f"📱 找到 {len(incoming_regions)} 个接收消息区域, {len(outgoing_regions)} 个发送消息区域")
 
         # OCR处理耗时
         ocr_start = time.time()
-        # OCR_READER = easyocr.Reader(['ch_sim', 'en'])  # 注：初始化建议移到函数外
-        processed_img = preprocess_for_ocr(image)
-
-        words_result = OCR_READER.readtext(processed_img)
+        
+        # 处理接收消息（这是我们主要关心的）
+        clean_texts = []
+        for i, (x, y, w, h) in enumerate(incoming_regions):
+            try:
+                # 裁剪消息区域
+                message_region = image[y:y+h, x:x+w]
+                
+                # 预处理
+                processed_region = preprocess_for_ocr(message_region)
+                
+                # OCR识别
+                words_result = OCR_READER.readtext(processed_region)
+                
+                # 提取文本
+                region_text = ''
+                for detection in words_result:
+                    text = detection[1].strip()
+                    confidence = detection[2]
+                    
+                    if text and confidence > 0.5:  # 过滤低置信度
+                        region_text += text
+                        
+                if region_text:
+                    clean_texts.append(region_text)
+                    print(f"📝 区域 {i+1}: '{region_text[:30]}{'...' if len(region_text) > 30 else ''}'")
+            
+            except Exception as e:
+                print(f"❌ 区域 {i+1} OCR错误: {e}")
+        
+        # 取最新（最下方）的消息
+        if clean_texts:
+            # 假设最后一个区域是最新消息
+            result['white'] = [clean_texts[-1]]
+            print(f"✅ 提取到最新消息: '{clean_texts[-1][:50]}{'...' if len(clean_texts[-1]) > 50 else ''}'")
+        
         time_stats['ocr_process'] = time.time() - ocr_start
-
-        # 文本过滤耗时
-        filter_start = time.time()
-        clean_text = ''
-        for detection in words_result:
-            coordinates, text, _ = detection
-            upline = coordinates[0][1]
-            downline = coordinates[2][1]
-
-            if upline >= msg_y_upline and downline <= msg_y_downline:
-                clean_text += text
-
-        if clean_text:
-            result['white'].append(clean_text)
-        time_stats['text_filter'] = time.time() - filter_start
-
-        # 总耗时计算
         time_stats['total'] = time.time() - total_start
 
         # 打印耗时分析
-        print("\n[性能分析]")
+        print("\n[增强性能分析]")
         print(f"总耗时: {time_stats['total']:.3f}s")
-        print(
-            f"图像加载: {time_stats['image_load'] * 1000:.1f}ms ({time_stats['image_load'] / time_stats['total']:.1%})")
-        print(f"白色区域检测: {time_stats['white_detect'] * 1000:.1f}ms")
-        print(f"绿色区域检测: {time_stats['green_detect'] * 1000:.1f}ms")
-        print(
-            f"OCR处理: {time_stats['ocr_process'] * 1000:.1f}ms ({time_stats['ocr_process'] / time_stats['total']:.1%})")
-        print(f"文本过滤: {time_stats['text_filter'] * 1000:.1f}ms")
+        print(f"图像加载: {time_stats['image_load'] * 1000:.1f}ms ({time_stats['image_load'] / time_stats['total']:.1%})")
+        print(f"主题检测: {time_stats['theme_detect'] * 1000:.1f}ms")
+        print(f"区域检测: {time_stats['region_detect'] * 1000:.1f}ms")
+        print(f"OCR处理: {time_stats['ocr_process'] * 1000:.1f}ms ({time_stats['ocr_process'] / time_stats['total']:.1%})")
 
         return result
 
     except Exception as e:
         print(f"消息捕获失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return result
 
 

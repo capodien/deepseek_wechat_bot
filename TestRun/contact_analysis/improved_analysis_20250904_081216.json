@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-09-04T08:12:16.285686",
+  "source_screenshot": "diagnostic_test_20250904_081207.png",
+  "total_cards": 10,
+  "cards_with_notifications": 1,
+  "cards_with_messages": 10,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        215,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        230,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "381V1C ACC0UI5",
+      "timestamp": "",
+      "click_center": [
+        130,
+        260
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        385,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        400,
+        40,
+        40
+      ],
+      "contact_name": "0;",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "hollo",
+      "timestamp": "",
+      "click_center": [
+        130,
+        423
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        462,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        477,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "10 SaIy ",
+      "timestamp": "",
+      "click_center": [
+        130,
+        500
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        539,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        554,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "ETrOr 43 Wegalasslgnn",
+      "timestamp": "",
+      "click_center": [
+        130,
+        577
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        616,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        631,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "小管家小柳 @万师傅",
+      "timestamp": "",
+      "click_center": [
+        130,
+        654
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        693,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        708,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Oscar@深圳 Oscar",
+      "timestamp": "",
+      "click_center": [
+        130,
+        738
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        865,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        880,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "甜蜜蜜",
+      "timestamp": "",
+      "click_center": [
+        130,
+        903
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        942,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        40,
+        957,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Genkinno 泰国售后",
+      "timestamp": "",
+      "click_center": [
+        130,
+        987
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        1115,
+        480,
+        77
+      ],
+      "avatar_bounds": [
+        40,
+        1130,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "朱高g十饭群",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1153
+      ]
+    },
+    {
+      "index": 9,
+      "bounds": [
+        0,
+        1192,
+        480,
+        70
+      ],
+      "avatar_bounds": [
+        40,
+        1207,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "泰国Genkinno 泳池机器)",
+      "timestamp": "",
+      "click_center": [
+        130,
+        1227
+      ]
+    }
+  ]
+}

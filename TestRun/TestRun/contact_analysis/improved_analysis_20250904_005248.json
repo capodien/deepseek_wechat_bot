@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-04T00:52:48.183861",
+  "source_screenshot": "diagnostic_test_20250904_004017.png",
+  "total_cards": 22,
+  "cards_with_notifications": 3,
+  "cards_with_messages": 16,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        50,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        65,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": 

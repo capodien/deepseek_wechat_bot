@@ -72,3 +72,29 @@ def save_message(username, message, reply):
               (username, message, reply, datetime.now()))
     conn.commit()
     conn.close()
+
+def get_recent_messages(limit=20):
+    """获取最近的消息记录用于诊断面板"""
+    try:
+        conn = sqlite3.connect('messages.db')
+        c = conn.cursor()
+        c.execute('''SELECT username, message, reply, timestamp 
+                     FROM messages 
+                     ORDER BY id DESC 
+                     LIMIT ?''', (limit,))
+        messages = c.fetchall()
+        conn.close()
+        
+        # 转换为字典列表
+        result = []
+        for msg in messages:
+            result.append({
+                'username': msg[0],
+                'message': msg[1],
+                'reply': msg[2],
+                'timestamp': msg[3]
+            })
+        return result
+    except Exception as e:
+        print(f"获取消息记录失败: {e}")
+        return []

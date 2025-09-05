@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log_Diagnostic_Console (LDC) - WeChat Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f9f9;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+
+        .drop-zone-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        /* Metrics Dashboard */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* Timeline */
+        .timeline {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            border-left: 3px solid #e0e0e0;
+            padding-left: 20px;
+            margin-left: 10px;
+            position: relative;
+            padding-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: #f9f9ff;
+            margin-left: 5px;
+            padding-left: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 5px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+        }
+
+        .timeline-item.error::before {
+            border-color: #e74c3c;
+        }
+
+        .timeline-item.warning::before {
+            border-color: #f39c12;
+        }
+
+        .timeline-item.success::before {
+            border-color: #27ae60;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .timeline-time {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .timeline-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: white;
+        }
+
+        .timeline-type.screenshot { background: #3498db; }
+        .timeline-type.detection { background: #9b59b6; }
+        .timeline-type.ocr { background: #e67e22; }
+        .timeline-type.click { background: #1abc9c; }
+        .timeline-type.error { background: #e74c3c; }
+        .timeline-type.performance { background: #34495e; }
+
+        .timeline-module {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-data {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .timeline-metrics {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        /* Detail View */
+        .detail-panel {
+            display: none;
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            bottom: 20px;
+            width: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .detail-panel.active {
+            display: block;
+        }
+
+        .detail-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+        }
+
+        .detail-close:hover {
+            color: #333;
+        }
+
+        .detail-image {
+            width: 100%;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .detail-json {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+        }
+
+        /* Image Comparison */
+        .image-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .image-comparison img {
+            width: 100%;
+            border-radius: 8px;
+            cursor: zoom-in;
+        }
+
+        .image-label {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #ddd;
+        }
+
+        .connection-status.server {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .connection-status.offline {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        /* Server Controls */
+        .server-controls {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .server-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .server-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .server-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .server-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .server-btn.active {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        /* Export Button */
+        .export-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Log_Diagnostic_Console (LDC)</h1>
+            <div class="subtitle">Analyze WeChat Bot diagnostic logs without server</div>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connectionStatus" class="connection-status" style="display: none;"></div>
+
+        <!-- Server Mode Controls -->
+        <div id="serverControls" class="server-controls" style="display: none;">
+            <div class="server-buttons">
+                <button id="refreshBtn" class="server-btn">🔄 Refresh Latest</button>
+                <button id="autoRefreshBtn" class="server-btn">⏰ Auto-Refresh: OFF</button>
+                <button id="runDetectionBtn" class="server-btn">🔍 Run Avatar Detection</button>
+                <button id="runOcrBtn" class="server-btn">📝 Run OCR</button>
+            </div>
+        </div>
+
+        <!-- File Drop Zone -->
+        <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept=".json" multiple>
+            <div class="drop-zone-text">📁 Drop JSON log files here or click to browse</div>
+            <div class="drop-zone-hint">Supports multiple files • Drag & drop enabled • Auto-loading when server available</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="filter-group">
+                <label>Event Type:</label>
+                <select id="eventTypeFilter">
+                    <option value="">All</option>
+                    <option value="screenshot">Screenshot</option>
+                    <option value="detection">Detection</option>
+                    <option value="ocr">OCR</option>
+                    <option value="click">Click</option>
+                    <option value="error">Error</option>
+                    <option value="performance">Performance</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="statusFilter">
+                    <option value="">All</option>
+                    <option value="success">Success</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Module:</label>
+                <select id="moduleFilter">
+                    <option value="">All</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="searchInput" placeholder="Search in data...">
+            </div>
+        </div>
+
+        <!-- Metrics Dashboard -->
+        <div class="metrics" id="metricsPanel">
+            <div class="metric-card">
+                <div class="metric-value" id="totalEvents">0</div>
+                <div class="metric-label">Total Events</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #27ae60 0%, #16a085 100%);">
+                <div class="metric-value" id="successCount">0</div>
+                <div class="metric-label">Success</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                <div class="metric-value" id="warningCount">0</div>
+                <div class="metric-label">Warnings</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <div class="metric-value" id="errorCount">0</div>
+                <div class="metric-label">Errors</div>
+            </div>
+            <div class="metric-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                <div class="metric-value" id="avgDuration">0ms</div>
+                <div class="metric-label">Avg Duration</div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 20px; color: #666;">Processing logs...</p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detailPanel">
+        <span class="detail-close" id="closeDetail">×</span>
+        <div id="detailContent"></div>
+    </div>
+
+    <!-- Export Button -->
+    <button class="export-btn" id="exportBtn">📥 Export Filtered</button>
+
+    <script>
+        // Global state
+        let allEvents = [];
+        let filteredEvents = [];
+        let modules = new Set();
+        let isServerMode = false;
+        let autoRefreshInterval = null;
+
+        // DOM elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const timeline = document.getElementById('timeline');
+        const detailPanel = document.getElementById('detailPanel');
+        const detailContent = document.getElementById('detailContent');
+        const closeDetail = document.getElementById('closeDetail');
+        const loading = document.getElementById('loading');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const serverControls = document.getElementById('serverControls');
+        
+        // Filters
+        const eventTypeFilter = document.getElementById('eventTypeFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const moduleFilter = document.getElementById('moduleFilter');
+        const searchInput = document.getElementById('searchInput');
+        const exportBtn = document.getElementById('exportBtn');
+
+        // Metrics
+        const totalEventsEl = document.getElementById('totalEvents');
+        const successCountEl = document.getElementById('successCount');
+        const warningCountEl = document.getElementById('warningCount');
+        const errorCountEl = document.getElementById('errorCount');
+        const avgDurationEl = document.getElementById('avgDuration');
+
+        // File handling
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        async function handleFiles(files) {
+            loading.style.display = 'block';
+            allEvents = [];
+            modules.clear();
+
+            for (const file of files) {
+                if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                    try {
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        
+                        // Handle both array and single object formats
+                        const events = Array.isArray(data) ? data : [data];
+                        allEvents.push(...events);
+                        
+                        // Collect modules
+                        events.forEach(event => {
+                            if (event.module) modules.add(event.module);
+                        });
+                    } catch (error) {
+                        console.error(`Error parsing ${file.name}:`, error);
+                        alert(`Failed to parse ${file.name}: ${error.message}`);
+                    }
+                }
+            }
+
+            // Sort by timestamp
+            allEvents.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            // Update module filter
+            updateModuleFilter();
+            
+            // Apply filters and render
+            applyFilters();
+            
+            loading.style.display = 'none';
+        }
+
+        function updateModuleFilter() {
+            moduleFilter.innerHTML = '<option value="">All</option>';
+            [...modules].sort().forEach(module => {
+                const option = document.createElement('option');
+                option.value = module;
+                option.textContent = module;
+                moduleFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const typeFilter = eventTypeFilter.value;
+            const statusFilterVal = statusFilter.value;
+            const moduleFilterVal = moduleFilter.value;
+            const searchTerm = searchInput.value.toLowerCase();
+
+            filteredEvents = allEvents.filter(event => {
+                if (typeFilter && event.event_type !== typeFilter) return false;
+                if (statusFilterVal && event.status !== statusFilterVal) return false;
+                if (moduleFilterVal && event.module !== moduleFilterVal) return false;
+                
+                if (searchTerm) {
+                    const dataStr = JSON.stringify(event.data).toLowerCase();
+                    if (!dataStr.includes(searchTerm)) return false;
+                }
+
+                return true;
+            });
+
+            renderTimeline();
+            updateMetrics();
+        }
+
+        function renderTimeline() {
+            timeline.innerHTML = '';
+
+            filteredEvents.forEach((event, index) => {
+                const item = document.createElement('div');
+                item.className = `timeline-item ${event.status}`;
+                item.dataset.index = index;
+
+                const time = new Date(event.timestamp);
+                const timeStr = time.toLocaleTimeString();
+                const dateStr = time.toLocaleDateString();
+
+                item.innerHTML = `
+                    <div class="timeline-header">
+                        <div>
+                            <span class="timeline-type ${event.event_type}">${event.event_type}</span>
+                            <span class="status-badge ${event.status}">${event.status}</span>
+                        </div>
+                        <span class="timeline-time">${dateStr} ${timeStr}</span>
+                    </div>
+                    <div class="timeline-module">${event.module}</div>
+                    <div class="timeline-data">${formatEventData(event.data)}</div>
+                    ${formatMetrics(event.metrics)}
+                `;
+
+                item.addEventListener('click', () => showDetail(event));
+                timeline.appendChild(item);
+            });
+
+            if (filteredEvents.length === 0) {
+                timeline.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No events match the current filters</div>';
+            }
+        }
+
+        function formatEventData(data) {
+            if (!data) return '';
+            
+            // Extract key information for preview
+            const preview = [];
+            
+            if (data.message) preview.push(data.message);
+            if (data.operation) preview.push(`Operation: ${data.operation}`);
+            if (data.text) preview.push(`Text: ${data.text.substring(0, 100)}...`);
+            if (data.detections) preview.push(`Detections: ${data.detections.length}`);
+            if (data.error_message) preview.push(`Error: ${data.error_message}`);
+            
+            return preview.join(' • ') || JSON.stringify(data).substring(0, 100) + '...';
+        }
+
+        function formatMetrics(metrics) {
+            if (!metrics || Object.keys(metrics).length === 0) return '';
+            
+            const items = [];
+            if (metrics.duration_ms) items.push(`⏱ ${metrics.duration_ms}ms`);
+            if (metrics.accuracy) items.push(`🎯 ${(metrics.accuracy * 100).toFixed(1)}%`);
+            if (metrics.items_processed) items.push(`📊 ${metrics.items_processed} items`);
+            
+            return items.length > 0 ? `<div class="timeline-metrics">${items.join(' ')}</div>` : '';
+        }
+
+        function showDetail(event) {
+            detailContent.innerHTML = `
+                <h2 style="margin-bottom: 20px;">${event.event_type} Event</h2>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>Module:</strong> ${event.module}<br>
+                    <strong>Timestamp:</strong> ${new Date(event.timestamp).toLocaleString()}<br>
+                    <strong>Status:</strong> <span class="status-badge ${event.status}">${event.status}</span>
+                </div>
+
+                ${event.visual_output ? `
+                    <div class="image-comparison">
+                        ${event.visual_output.includes('overlay') ? `
+                            <div>
+                                <img src="diagnostic_logs/${event.visual_output}" alt="Overlay" class="detail-image">
+                                <div class="image-label">Annotated</div>
+                            </div>
+                        ` : `
+                            <img src="diagnostic_logs/${event.visual_output}" alt="Screenshot" class="detail-image">
+                        `}
+                    </div>
+                ` : ''}
+
+                ${event.metrics && Object.keys(event.metrics).length > 0 ? `
+                    <h3 style="margin: 20px 0 10px;">Metrics</h3>
+                    <div class="detail-json">${JSON.stringify(event.metrics, null, 2)}</div>
+                ` : ''}
+
+                <h3 style="margin: 20px 0 10px;">Event Data</h3>
+                <div class="detail-json">${JSON.stringify(event.data, null, 2)}</div>
+            `;
+
+            detailPanel.classList.add('active');
+        }
+
+        function updateMetrics() {
+            const total = filteredEvents.length;
+            const success = filteredEvents.filter(e => e.status === 'success').length;
+            const warning = filteredEvents.filter(e => e.status === 'warning').length;
+            const error = filteredEvents.filter(e => e.status === 'error').length;
+            
+            const durations = filteredEvents
+                .filter(e => e.metrics && e.metrics.duration_ms)
+                .map(e => e.metrics.duration_ms);
+            
+            const avgDuration = durations.length > 0 
+                ? (durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(1)
+                : 0;
+
+            totalEventsEl.textContent = total;
+            successCountEl.textContent = success;
+            warningCountEl.textContent = warning;
+            errorCountEl.textContent = error;
+            avgDurationEl.textContent = `${avgDuration}ms`;
+        }
+
+        // Event listeners for filters
+        eventTypeFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+        moduleFilter.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
+
+        // Close detail panel
+        closeDetail.addEventListener('click', () => {
+            detailPanel.classList.remove('active');
+        });
+
+        // Export functionality
+        exportBtn.addEventListener('click', () => {
+            const dataStr = JSON.stringify(filteredEvents, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `diagnostic_export_${new Date().toISOString()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                detailPanel.classList.remove('active');
+            }
+        });
+
+        // Server connection functionality
+        async function checkServerConnection() {
+            try {
+                const response = await fetch('/api/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    setServerMode(true, data);
+                    return true;
+                }
+            } catch (error) {
+                // Server not available
+            }
+            setServerMode(false);
+            return false;
+        }
+
+        function setServerMode(connected, serverData = null) {
+            isServerMode = connected;
+            
+            if (connected) {
+                connectionStatus.className = 'connection-status server';
+                connectionStatus.innerHTML = `
+                    <div>🟢 <strong>Server Mode Active</strong></div>
+                    <div>Connected to diagnostic web server • Auto-loading enabled</div>
+                    ${serverData ? `<div style="font-size: 0.9em; color: #666;">Server: ${serverData.server} • ${serverData.timestamp}</div>` : ''}
+                `;
+                connectionStatus.style.display = 'block';
+                serverControls.style.display = 'block';
+                
+                // Auto-load latest logs
+                loadLatestLogs();
+            } else {
+                connectionStatus.className = 'connection-status offline';
+                connectionStatus.innerHTML = `
+                    <div>🔴 <strong>Offline Mode</strong></div>
+                    <div>Server not available • Using drag & drop file loading</div>
+                    <div style="font-size: 0.9em; color: #666;">Start diagnostic_web_server.py to enable auto-loading</div>
+                `;
+                connectionStatus.style.display = 'block';
+                serverControls.style.display = 'none';
+            }
+        }
+
+        async function loadLatestLogs() {
+            if (!isServerMode) return;
+            
+            try {
+                loading.style.display = 'block';
+                const response = await fetch('/api/latest-log');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allEvents = data.events || [];
+                    modules.clear();
+                    
+                    // Collect modules
+                    allEvents.forEach(event => {
+                        if (event.module) modules.add(event.module);
+                    });
+                    
+                    // Update UI
+                    updateModuleFilter();
+                    applyFilters();
+                    
+                    console.log(`Loaded ${allEvents.length} events from server`);
+                } else {
+                    console.error('Failed to load logs from server');
+                    timeline.innerHTML = '<div style="text-align: center; padding: 40px; color: #e74c3c;">Failed to load logs from server</div>';
+                }
+            } catch (error) {
+                console.error('Error loading logs from server:', error);
+                timeline.innerHTML = '<div style="text-align: center; padding: 40px; color: #e74c3c;">Error connecting to server</div>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function runPythonFunction(functionName) {
+            if (!isServerMode) return;
+            
+            const button = document.getElementById(`${functionName}Btn`);
+            const originalText = button.textContent;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = `<div class="spinner" style="width: 16px; height: 16px;"></div> Running...`;
+                
+                const response = await fetch(`/api/run-${functionName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`${functionName} completed:`, result);
+                    // Auto-refresh logs after function execution
+                    setTimeout(loadLatestLogs, 1000);
+                    
+                    // Show success feedback
+                    button.className = 'server-btn active';
+                    button.textContent = `✅ ${originalText.split(' ').slice(1).join(' ')} - Done`;
+                    setTimeout(() => {
+                        button.className = 'server-btn';
+                        button.textContent = originalText;
+                    }, 3000);
+                } else {
+                    console.error(`${functionName} failed:`, result.error);
+                    button.textContent = `❌ ${originalText.split(' ').slice(1).join(' ')} - Failed`;
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error(`Error running ${functionName}:`, error);
+                button.textContent = `❌ ${originalText.split(' ').slice(1).join(' ')} - Error`;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 3000);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function setupServerControls() {
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', loadLatestLogs);
+            
+            // Auto-refresh toggle
+            const autoRefreshBtn = document.getElementById('autoRefreshBtn');
+            autoRefreshBtn.addEventListener('click', () => {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                    autoRefreshBtn.textContent = '⏰ Auto-Refresh: OFF';
+                    autoRefreshBtn.className = 'server-btn';
+                } else {
+                    autoRefreshInterval = setInterval(loadLatestLogs, 30000); // Refresh every 30 seconds
+                    autoRefreshBtn.textContent = '⏰ Auto-Refresh: ON';
+                    autoRefreshBtn.className = 'server-btn active';
+                }
+            });
+            
+            // Function trigger buttons
+            document.getElementById('runDetectionBtn').addEventListener('click', () => runPythonFunction('avatar-detection'));
+            document.getElementById('runOcrBtn').addEventListener('click', () => runPythonFunction('ocr'));
+        }
+
+        // Initialize page
+        async function initializePage() {
+            setupServerControls();
+            
+            const serverAvailable = await checkServerConnection();
+            if (!serverAvailable) {
+                // Show fallback message
+                timeline.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Drop JSON log files above to start analyzing, or start diagnostic_web_server.py for auto-loading</div>';
+            }
+        }
+
+        // Run initialization when page loads
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

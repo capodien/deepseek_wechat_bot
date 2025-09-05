@@ -1,0 +1,537 @@
+{
+  "timestamp": "2025-09-04T01:08:38.224625",
+  "source_screenshot": "diagnostic_test_20250904_010833.png",
+  "total_cards": 22,
+  "cards_with_notifications": 3,
+  "cards_with_messages": 16,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        50,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        65,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "TIe IanSTer",
+      "timestamp": "",
+      "click_center": [
+        150,
+        80
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        111,
+        480,
+        90
+      ],
+      "avatar_bounds": [
+        60,
+        126,
+        40,
+        40
+      ],
+      "contact_name": "LUTAIUVVV 芏",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "V",
+      "timestamp": "",
+      "click_center": [
+        150,
+        156
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        210,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        225,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Rio_Old",
+      "timestamp": "",
+      "click_center": [
+        150,
+        240
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        271,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        286,
+        40,
+        40
+      ],
+      "contact_name": "hello",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "UH ",
+      "timestamp": "",
+      "click_center": [
+        150,
+        301
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        332,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        347,
+        40,
+        40
+      ],
+      "contact_name": "Cmotfoaton16",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        362
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        393,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        408,
+        40,
+        40
+      ],
+      "contact_name": "Service Accounts",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "深圳医保:事关\"非深户学龄前儿童",
+      "timestamp": "Vas",
+      "click_center": [
+        150,
+        423
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        454,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        469,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "YU Sally",
+      "timestamp": "",
+      "click_center": [
+        150,
+        484
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        515,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        530,
+        40,
+        40
+      ],
+      "contact_name": "没事没事",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        545
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        576,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        591,
+        40,
+        40
+      ],
+      "contact_name": "!",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "N",
+      "timestamp": "",
+      "click_center": [
+        150,
+        606
+      ]
+    },
+    {
+      "index": 9,
+      "bounds": [
+        0,
+        637,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        652,
+        40,
+        40
+      ],
+      "contact_name": "小管家小柳 @万师傅",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "[Mini Program] 万师傅老客户专",
+      "timestamp": "Vmc",
+      "click_center": [
+        150,
+        667
+      ]
+    },
+    {
+      "index": 10,
+      "bounds": [
+        0,
+        698,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        713,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Oscar@深圳 Oscar",
+      "timestamp": "",
+      "click_center": [
+        150,
+        728
+      ]
+    },
+    {
+      "index": 11,
+      "bounds": [
+        0,
+        759,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        774,
+        40,
+        40
+      ],
+      "contact_name": "你看看哪里同意系统的",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "有看到过。",
+      "click_center": [
+        150,
+        789
+      ]
+    },
+    {
+      "index": 12,
+      "bounds": [
+        0,
+        820,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        835,
+        40,
+        40
+      ],
+      "contact_name": "休页T佃N仃 J以",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "忌3",
+      "click_center": [
+        150,
+        850
+      ]
+    },
+    {
+      "index": 13,
+      "bounds": [
+        0,
+        881,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        896,
+        40,
+        40
+      ],
+      "contact_name": "甜寥寥",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "「Audiol 6\"",
+      "timestamp": "",
+      "click_center": [
+        150,
+        911
+      ]
+    },
+    {
+      "index": 14,
+      "bounds": [
+        0,
+        942,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        957,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Genkinno 泰国售后",
+      "timestamp": "",
+      "click_center": [
+        150,
+        972
+      ]
+    },
+    {
+      "index": 15,
+      "bounds": [
+        0,
+        1003,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1018,
+        40,
+        40
+      ],
+      "contact_name": "Alven_Zhao",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1033
+      ]
+    },
+    {
+      "index": 16,
+      "bounds": [
+        0,
+        1064,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1079,
+        40,
+        40
+      ],
+      "contact_name": "WINIMIZeO OTOUPS",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "明y<你 |Ub  猪脚~小类辟:O以",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1094
+      ]
+    },
+    {
+      "index": 17,
+      "bounds": [
+        0,
+        1125,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1140,
+        40,
+        40
+      ],
+      "contact_name": "年-柃干饬畔",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "JASPFR; +撮川",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1155
+      ]
+    },
+    {
+      "index": 18,
+      "bounds": [
+        0,
+        1186,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1201,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "泰国Genkinno 泳池机器人茫",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1216
+      ]
+    },
+    {
+      "index": 19,
+      "bounds": [
+        0,
+        1247,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1262,
+        40,
+        40
+      ],
+      "contact_name": "~~唔~1志强 泰国: [St",
+      "has_red_dot": false,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1277
+      ]
+    },
+    {
+      "index": 20,
+      "bounds": [
+        0,
+        1308,
+        480,
+        61
+      ],
+      "avatar_bounds": [
+        60,
+        1323,
+        40,
+        40
+      ],
+      "contact_name": "与于倭  链冢 @贝壳平",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "VOICe Call",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1338
+      ]
+    },
+    {
+      "index": 21,
+      "bounds": [
+        0,
+        1369,
+        480,
+        46
+      ],
+      "avatar_bounds": [
+        60,
+        1384,
+        40,
+        40
+      ],
+      "contact_name": "古t4n入曰怊rC",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1392
+      ]
+    }
+  ]
+}

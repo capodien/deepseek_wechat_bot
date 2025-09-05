@@ -1,0 +1,537 @@
+{
+  "timestamp": "2025-09-04T01:06:50.775878",
+  "source_screenshot": "contact_cards_20250904_010331.png",
+  "total_cards": 22,
+  "cards_with_notifications": 20,
+  "cards_with_messages": 20,
+  "contact_cards": [
+    {
+      "index": 0,
+      "bounds": [
+        0,
+        50,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        65,
+        40,
+        40
+      ],
+      "contact_name": "ONo",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "+ Regulor contoct Cords",
+      "timestamp": "",
+      "click_center": [
+        150,
+        80
+      ]
+    },
+    {
+      "index": 1,
+      "bounds": [
+        0,
+        110,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        125,
+        40,
+        40
+      ],
+      "contact_name": "ptimol click Positioh",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "Agtor getectlor ",
+      "timestamp": "",
+      "click_center": [
+        150,
+        140
+      ]
+    },
+    {
+      "index": 2,
+      "bounds": [
+        0,
+        170,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        185,
+        40,
+        40
+      ],
+      "contact_name": "乒令4自",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "MOIe",
+      "timestamp": "",
+      "click_center": [
+        150,
+        200
+      ]
+    },
+    {
+      "index": 3,
+      "bounds": [
+        0,
+        230,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        245,
+        40,
+        40
+      ],
+      "contact_name": "R_OI",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Nomell0",
+      "timestamp": "",
+      "click_center": [
+        150,
+        260
+      ]
+    },
+    {
+      "index": 4,
+      "bounds": [
+        0,
+        290,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        305,
+        40,
+        40
+      ],
+      "contact_name": "18809a",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "\"R\"们",
+      "timestamp": "",
+      "click_center": [
+        150,
+        320
+      ]
+    },
+    {
+      "index": 5,
+      "bounds": [
+        0,
+        350,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        365,
+        40,
+        40
+      ],
+      "contact_name": "IOtificationlsH] 深圳湾",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "l凹t",
+      "timestamp": "hi, 谢谢关注",
+      "click_center": [
+        150,
+        380
+      ]
+    },
+    {
+      "index": 6,
+      "bounds": [
+        0,
+        410,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        425,
+        40,
+        40
+      ],
+      "contact_name": "TVIC ACOUI3",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "MOIe",
+      "timestamp": "Te5",
+      "click_center": [
+        150,
+        440
+      ]
+    },
+    {
+      "index": 7,
+      "bounds": [
+        0,
+        470,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        485,
+        40,
+        40
+      ],
+      "contact_name": "WLGaI",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "5殿U事",
+      "timestamp": "",
+      "click_center": [
+        150,
+        500
+      ]
+    },
+    {
+      "index": 8,
+      "bounds": [
+        0,
+        530,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        545,
+        40,
+        40
+      ],
+      "contact_name": "1l8809a",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "q fegaiassigniie WomtTfot",
+      "timestamp": "",
+      "click_center": [
+        150,
+        560
+      ]
+    },
+    {
+      "index": 9,
+      "bounds": [
+        0,
+        590,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        605,
+        40,
+        40
+      ],
+      "contact_name": "m",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "TN母33 芜????333??",
+      "timestamp": "收到了律师函",
+      "click_center": [
+        150,
+        620
+      ]
+    },
+    {
+      "index": 10,
+      "bounds": [
+        0,
+        650,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        665,
+        40,
+        40
+      ],
+      "contact_name": "簋冢小桠 `@亏魉俚",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Proqraml G师]老客白 [Mini ToIne",
+      "timestamp": "Yes",
+      "click_center": [
+        150,
+        680
+      ]
+    },
+    {
+      "index": 11,
+      "bounds": [
+        0,
+        710,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        725,
+        40,
+        40
+      ],
+      "contact_name": "I8s",
+      "has_red_dot": false,
+      "has_message": true,
+      "message_text": "OC{/9 3O N5UR 士",
+      "timestamp": "",
+      "click_center": [
+        150,
+        740
+      ]
+    },
+    {
+      "index": 12,
+      "bounds": [
+        0,
+        770,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        785,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "~ 嵛C祸秫卉 予痴@",
+      "timestamp": "",
+      "click_center": [
+        150,
+        800
+      ]
+    },
+    {
+      "index": 13,
+      "bounds": [
+        0,
+        830,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        845,
+        40,
+        40
+      ],
+      "contact_name": "深圳",
+      "has_red_dot": true,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        860
+      ]
+    },
+    {
+      "index": 14,
+      "bounds": [
+        0,
+        890,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        905,
+        40,
+        40
+      ],
+      "contact_name": "甜'蜜",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Urdinl R\"",
+      "timestamp": "Yes",
+      "click_center": [
+        150,
+        920
+      ]
+    },
+    {
+      "index": 15,
+      "bounds": [
+        0,
+        950,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        965,
+        40,
+        40
+      ],
+      "contact_name": "Unknown",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "Genklnno 乘国后",
+      "timestamp": "",
+      "click_center": [
+        150,
+        980
+      ]
+    },
+    {
+      "index": 16,
+      "bounds": [
+        0,
+        1010,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        1025,
+        40,
+        40
+      ],
+      "contact_name": "Hlen_chao",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "TT7",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1040
+      ]
+    },
+    {
+      "index": 17,
+      "bounds": [
+        0,
+        1070,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        1085,
+        40,
+        40
+      ],
+      "contact_name": "C",
+      "has_red_dot": true,
+      "has_message": false,
+      "message_text": "",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1100
+      ]
+    },
+    {
+      "index": 18,
+      "bounds": [
+        0,
+        1130,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        1145,
+        40,
+        40
+      ],
+      "contact_name": "?_乐格干饭群",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "899 ICocP +榀",
+      "timestamp": "Yesl",
+      "click_center": [
+        150,
+        1160
+      ]
+    },
+    {
+      "index": 19,
+      "bounds": [
+        0,
+        1190,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        1205,
+        40,
+        40
+      ],
+      "contact_name": "1UM",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "蠡国Genkinno 泳池机器人落",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1220
+      ]
+    },
+    {
+      "index": 20,
+      "bounds": [
+        0,
+        1250,
+        480,
+        60
+      ],
+      "avatar_bounds": [
+        60,
+        1265,
+        40,
+        40
+      ],
+      "contact_name": "'曙??3?忐暄傣国: [St",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "1a8919",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1280
+      ]
+    },
+    {
+      "index": 21,
+      "bounds": [
+        0,
+        1310,
+        480,
+        70
+      ],
+      "avatar_bounds": [
+        60,
+        1325,
+        40,
+        40
+      ],
+      "contact_name": "杓d俊@!邪:?半",
+      "has_red_dot": true,
+      "has_message": true,
+      "message_text": "UBSUIUICC Call",
+      "timestamp": "",
+      "click_center": [
+        150,
+        1345
+      ]
+    }
+  ]
+}
