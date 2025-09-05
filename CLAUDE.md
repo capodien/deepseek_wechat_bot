@@ -98,6 +98,14 @@ deepseek_wechat_bot/
 ├── db/                       # Database layer
 │   └── db.py                    # SQLite operations
 │
+├── modules/                  # Modular components (NEW)
+│   ├── __init__.py              # Module initialization
+│   ├── m_Card_Processing.py     # Main orchestrator (detector classes)
+│   ├── m_ScreenShot_WeChatWindow.py # Screenshot capture
+│   ├── screenshot_processor.py  # Screenshot I/O operations
+│   ├── visualization_engine.py  # Centralized visualization utilities
+│   └── image_utils.py           # Shared image processing functions
+│
 ├── docs/                     # Documentation
 │   ├── SETUP.md                 # Installation guide
 │   ├── ARCHITECTURE.md          # System design
@@ -109,6 +117,56 @@ deepseek_wechat_bot/
 ├── pic/screenshots/          # Image storage
 ├── step_diagnostic_server.py # Enhanced diagnostics
 └── process.md               # Definitive workflow guide
+```
+
+## 4.1 Modular Architecture (NEW)
+
+The system now uses a **modular architecture** for better maintainability and separation of concerns:
+
+### Core Modules:
+
+**🧠 Main Orchestrator** (`modules/m_Card_Processing.py`)
+- Contains all detector classes: `SimpleWidthDetector`, `CardAvatarDetector`, `CardBoundaryDetector`
+- Core detection logic and algorithms remain centralized
+- **Classes**: `RightBoundaryDetector`, `ContactNameBoundaryDetector`, `TimeBoxDetector`
+
+**📸 Screenshot Processor** (`modules/screenshot_processor.py`)
+- `capture_and_process_screenshot()` - Live capture with analysis
+- `process_screenshot_file()` - Process existing screenshot files
+- `get_live_card_analysis()` - Comprehensive analysis with visualizations
+- **Clean separation** of I/O operations from detection logic
+
+**🎨 Visualization Engine** (`modules/visualization_engine.py`)
+- Centralized visualization utilities with consistent styling
+- `VisualizationEngine` class for overlay generation
+- Heatmap creation, composite visualizations, debug outputs
+- **Standardized** color schemes and visual markers
+
+**🛠️ Image Utilities** (`modules/image_utils.py`)
+- `find_vertical_edge_x()` - Vertical edge detection with confidence scoring
+- `apply_level_adjustment()` - Photoshop-style image preprocessing
+- Common image processing functions and utilities
+- **Shared** functionality across all detector classes
+
+### Integration Benefits:
+- ✅ **Backward Compatibility**: Existing code works unchanged
+- ✅ **Modular Testing**: Each component can be tested independently
+- ✅ **Maintainability**: Clear separation of concerns and responsibilities
+- ✅ **Reusability**: Modules can be used by other components
+- ✅ **Legacy Fallbacks**: Automatic fallback to inline implementations
+
+### Usage Patterns:
+```python
+# Import main orchestrator (recommended)
+from modules import m_Card_Processing
+
+# Use detector classes as before
+detector = m_Card_Processing.SimpleWidthDetector()
+results = detector.detect_width("screenshot.png")
+
+# Import individual modules (advanced)
+from modules import screenshot_processor, visualization_engine
+screenshot_path, analysis = screenshot_processor.capture_and_process_screenshot()
 ```
 
 ## 5. Key Technical Features
@@ -192,16 +250,21 @@ deepseek_wechat_bot/
 3. Check existing diagnostic tools for similar patterns
 
 **Development Process**:
-1. Implement feature with comprehensive error handling
-2. Create diagnostic endpoint in `step_diagnostic_server.py`
-3. Add frontend button in `step_diagnostic.html`
-4. **🎨 MANDATORY: Implement visual overlay generation**:
+1. **Choose Architecture**: Decide between modular components or inline implementation
+   - **Use modules**: For reusable functionality, complex features, or visual components
+   - **Example**: `from modules import visualization_engine, screenshot_processor`
+2. Implement feature with comprehensive error handling
+3. Create diagnostic endpoint in `step_diagnostic_server.py`
+4. Add frontend button in `step_diagnostic.html`
+5. **🎨 MANDATORY: Implement visual overlay generation**:
+   - **Option A**: Use `visualization_engine.VisualizationEngine` for consistent styling
+   - **Option B**: Implement custom visualization within detector classes
    - Create visualization function that draws ALL detection elements
    - Use distinct colors and clear labeling
    - Save overlay image with descriptive timestamp filename
    - Return overlay path in API response for frontend display
-5. Test error handling, edge cases, and visual accuracy
-6. Verify overlay displays correctly in web interface
+6. Test error handling, edge cases, and visual accuracy
+7. Verify overlay displays correctly in web interface
 
 **Post-Development**:
 1. **MANDATORY**: Update [`process.md`](process.md) with workflow changes
@@ -231,6 +294,13 @@ deepseek_wechat_bot/
 - **Display Resolution Changed** → All pixel coordinates shift
 
 **Recovery**: Use diagnostic tools to recalibrate coordinates and verify functionality after any of these scenarios.
+
+### Archive Directory Protocol
+🚫 **DO NOT TOUCH**: Contains archived/legacy code
+- **NEVER modify, reference, or run anything in Archive/ directory**
+- Archive is for historical purposes only
+- All active development uses current modules in main directories
+- Archive files may have outdated imports and broken dependencies
 
 ### TestRun Directory Protocol
 ⚠️ **DEVELOPMENT ONLY**: Contains temporary test files and experimental code
@@ -280,8 +350,68 @@ python step_diagnostic_server.py     # WDC (Web Diagnostic Console)
 python capture/deal_chatbox.py       # Test OCR
 python capture/monitor_new_message.py # Test detection
 
+# Module testing (NEW)
+python modules/image_utils.py        # Test image utility functions
+python modules/visualization_engine.py # Test visualization engine
+python modules/screenshot_processor.py # Test screenshot processing
+
 # Database inspection
 sqlite3 history.db "SELECT * FROM conversations LIMIT 5;"
+```
+
+### 11.4 Modular Development Patterns (NEW)
+
+**Using Detector Classes** (Recommended approach):
+```python
+from modules import m_Card_Processing
+
+# Initialize detectors
+width_detector = m_Card_Processing.SimpleWidthDetector()
+avatar_detector = m_Card_Processing.CardAvatarDetector()
+
+# Use as before - full backward compatibility
+width_result = width_detector.detect_width("screenshot.png")
+avatars, info = avatar_detector.detect_avatars("screenshot.png")
+```
+
+**Using Individual Modules** (Advanced/custom development):
+```python
+from modules import screenshot_processor, visualization_engine, image_utils
+
+# Screenshot processing
+screenshot_path, analysis = screenshot_processor.capture_and_process_screenshot()
+
+# Visualization
+engine = visualization_engine.VisualizationEngine()
+overlay = engine.create_base_overlay(screenshot_path)
+engine.draw_rectangle(overlay, x, y, w, h, 'card', 'Detected Card')
+
+# Image utilities
+x_pos, confidence, profile = image_utils.find_vertical_edge_x(img_array)
+enhanced_img = image_utils.apply_level_adjustment(gray_img)
+```
+
+**Module Integration in Diagnostic Endpoints**:
+```python
+# In step_diagnostic_server.py
+from modules import m_Card_Processing, visualization_engine
+
+@app.route('/api/test-card-detection')
+def test_card_detection():
+    try:
+        # Use main orchestrator for detection
+        detector = m_Card_Processing.CardBoundaryDetector()
+        cards, info = detector.detect_cards(image_path)
+        
+        # Use visualization engine for consistent overlays
+        engine = visualization_engine.VisualizationEngine()
+        overlay_path = engine.save_visualization(
+            overlay_img, image_path, "card_detection"
+        )
+        
+        return {'cards': cards, 'overlay': overlay_path}
+    except Exception as e:
+        return {'error': str(e)}
 ```
 
 ## 9. Security Alert

@@ -16,6 +16,31 @@ This WeChat desktop automation bot uses computer vision (OCR), AI integration (D
 6. **Database Layer** (`db/db.py`) - Stores conversation history and messages
 7. **WDC (Web Diagnostic Console)** (`step_diagnostic_server.py`) - Real-time monitoring web interface
 
+### Modular Components (NEW ARCHITECTURE)
+
+8. **Card Processing Orchestrator** (`modules/m_Card_Processing.py`) - Main detector classes and coordination
+   - `SimpleWidthDetector` - Message card width boundary detection
+   - `CardAvatarDetector` - Avatar position detection within cards
+   - `CardBoundaryDetector` - Individual card boundary detection
+   - `ContactNameBoundaryDetector` - Name region detection
+   - `TimeBoxDetector` - Timestamp detection
+   - `RightBoundaryDetector` - Right boundary detection with preprocessing
+
+9. **Screenshot Processor** (`modules/screenshot_processor.py`) - Screenshot I/O operations and processing
+   - `capture_and_process_screenshot()` - Live capture with comprehensive analysis
+   - `process_screenshot_file()` - Process existing screenshot files
+   - `get_live_card_analysis()` - Real-time analysis with optional visualizations
+
+10. **Visualization Engine** (`modules/visualization_engine.py`) - Centralized visualization utilities
+    - `VisualizationEngine` class for consistent visual overlays
+    - Heatmap generation and composite visualizations
+    - Standardized color schemes and debug outputs
+
+11. **Image Utilities** (`modules/image_utils.py`) - Shared image processing functions
+    - `find_vertical_edge_x()` - Vertical edge detection with confidence scoring
+    - `apply_level_adjustment()` - Photoshop-style image preprocessing
+    - Common edge detection and morphological operations
+
 ### Key Libraries
 
 - **pyautogui**: Cross-platform GUI automation (clicking, typing, screenshots)

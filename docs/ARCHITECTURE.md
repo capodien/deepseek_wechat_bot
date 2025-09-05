@@ -51,6 +51,14 @@ deepseek_wechat_bot/
 ├── db/                       # Database layer
 │   └── db.py                     # SQLite operations and schema
 ├── 
+├── modules/                  # Modular components (NEW ARCHITECTURE)
+│   ├── __init__.py               # Module initialization  
+│   ├── m_Card_Processing.py      # Main orchestrator with all detector classes
+│   ├── m_ScreenShot_WeChatWindow.py # Screenshot capture functionality
+│   ├── screenshot_processor.py   # Screenshot I/O operations and processing
+│   ├── visualization_engine.py   # Centralized visualization utilities
+│   └── image_utils.py            # Shared image processing functions
+├── 
 ├── Diagnostic/               # Enhanced diagnostic functionality
 │   ├── *.py                      # Advanced diagnostic tools
 │   └── *.png                     # Analysis screenshots
@@ -99,6 +107,56 @@ def process_screenshot(image_path):
     processing_time = (time.time() - start_time) * 1000
     logger.info(f"Screenshot processing: {processing_time:.2f}ms")
 ```
+
+### Modular Architecture (NEW)
+The system now employs a **modular architecture** for improved maintainability and separation of concerns:
+
+#### Design Principles
+- **Single Responsibility**: Each module handles a specific domain (I/O, visualization, utilities)
+- **Loose Coupling**: Modules interact through well-defined interfaces
+- **High Cohesion**: Related functionality grouped within modules
+- **Backward Compatibility**: Legacy code continues to work unchanged
+
+#### Module Responsibilities
+
+**Main Orchestrator** (`modules/m_Card_Processing.py`)
+- **Purpose**: Central coordination of all detector classes
+- **Components**: `SimpleWidthDetector`, `CardAvatarDetector`, `CardBoundaryDetector`, `ContactNameBoundaryDetector`, `TimeBoxDetector`, `RightBoundaryDetector`
+- **Pattern**: Facade pattern providing unified interface to detection subsystems
+
+**Screenshot Processor** (`modules/screenshot_processor.py`)
+- **Purpose**: I/O operations and screenshot lifecycle management
+- **Functions**: `capture_and_process_screenshot()`, `process_screenshot_file()`, `get_live_card_analysis()`
+- **Pattern**: Service layer abstracting screenshot operations
+
+**Visualization Engine** (`modules/visualization_engine.py`)
+- **Purpose**: Centralized visualization utilities and consistent styling
+- **Features**: `VisualizationEngine` class, standardized overlays, heatmap generation
+- **Pattern**: Strategy pattern for different visualization types
+
+**Image Utilities** (`modules/image_utils.py`)
+- **Purpose**: Shared image processing functions and algorithms
+- **Functions**: `find_vertical_edge_x()`, `apply_level_adjustment()`, edge detection utilities
+- **Pattern**: Utility/Helper pattern for common operations
+
+#### Integration Mechanisms
+```python
+# Automatic module detection and fallback
+if MODULAR_IMPORTS_AVAILABLE:
+    find_vertical_edge_x = image_utils.find_vertical_edge_x
+    capture_and_process_screenshot = screenshot_processor.capture_and_process_screenshot
+else:
+    # Legacy inline implementations for backward compatibility
+    def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+        # Original implementation preserved
+```
+
+#### Benefits Achieved
+- **Maintainability**: Clear separation enables independent module updates
+- **Testability**: Each module can be unit tested in isolation
+- **Reusability**: Modules can be imported and used by other components
+- **Performance**: Selective imports reduce memory footprint
+- **Development**: Parallel development on different modules
 
 ## Computer Vision System
 

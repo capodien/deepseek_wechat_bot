@@ -18,7 +18,24 @@ import sys
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime
 
-# Import screenshot capture functionality
+# Import new modular components
+try:
+    from . import screenshot_processor
+    from . import visualization_engine
+    from . import image_utils
+    MODULAR_IMPORTS_AVAILABLE = True
+except ImportError:
+    # Fallback imports for direct execution
+    try:
+        import screenshot_processor
+        import visualization_engine
+        import image_utils
+        MODULAR_IMPORTS_AVAILABLE = True
+    except ImportError:
+        print("⚠️  Modular components not available. Using legacy inline functions.")
+        MODULAR_IMPORTS_AVAILABLE = False
+
+# Import screenshot capture functionality (legacy support)
 try:
     from .m_ScreenShot_WeChatWindow import capture_screenshot
     SCREENSHOT_AVAILABLE = True
@@ -36,44 +53,49 @@ except ImportError:
 # 1. SIMPLE WIDTH DETECTOR
 # =============================================================================
 
-def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
-    """
-    Return the x (in original image coords) of the dominant vertical edge inside ROI.
-    Works on narrow strips like your screenshot.
-    """
-    if img.ndim == 3:
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img.copy()
+# Use find_vertical_edge_x from image_utils module
+if MODULAR_IMPORTS_AVAILABLE:
+    find_vertical_edge_x = image_utils.find_vertical_edge_x
+else:
+    # Legacy fallback implementation
+    def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+        """
+        Return the x (in original image coords) of the dominant vertical edge inside ROI.
+        Works on narrow strips like your screenshot.
+        """
+        if img.ndim == 3:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = img.copy()
 
-    H, W = gray.shape
-    x1 = W if x1 is None else x1
-    y1 = H if y1 is None else y1
-    roi = gray[y0:y1, x0:x1]
+        H, W = gray.shape
+        x1 = W if x1 is None else x1
+        y1 = H if y1 is None else y1
+        roi = gray[y0:y1, x0:x1]
 
-    # Optional denoise/normalize for dark UIs
-    roi = cv2.bilateralFilter(roi, d=5, sigmaColor=25, sigmaSpace=25)
+        # Optional denoise/normalize for dark UIs
+        roi = cv2.bilateralFilter(roi, d=5, sigmaColor=25, sigmaSpace=25)
 
-    # Compute horizontal gradient (vertical edges) → 1D profile
-    # (Sobel is a bit smoother than simple diff)
-    sobelx = cv2.Sobel(roi, cv2.CV_32F, 1, 0, ksize=3)
-    prof = np.mean(np.abs(sobelx), axis=0)  # average over rows → shape (roiW,)
+        # Compute horizontal gradient (vertical edges) → 1D profile
+        # (Sobel is a bit smoother than simple diff)
+        sobelx = cv2.Sobel(roi, cv2.CV_32F, 1, 0, ksize=3)
+        prof = np.mean(np.abs(sobelx), axis=0)  # average over rows → shape (roiW,)
 
-    # Smooth & pick peak
-    prof = cv2.GaussianBlur(prof.reshape(1,-1), (1,7), 0).ravel()
-    if rightmost:
-        idx = int(np.argmax(prof[::-1]))          # strongest from right
-        xr  = (x1 - 1) - idx
-    else:
-        xr  = int(np.argmax(prof)) + x0
+        # Smooth & pick peak
+        prof = cv2.GaussianBlur(prof.reshape(1,-1), (1,7), 0).ravel()
+        if rightmost:
+            idx = int(np.argmax(prof[::-1]))          # strongest from right
+            xr  = (x1 - 1) - idx
+        else:
+            xr  = int(np.argmax(prof)) + x0
 
-    # Confidence (0–1): peak vs neighborhood
-    peak = prof[(xr - x0)]
-    med  = float(np.median(prof))
-    mad  = float(np.median(np.abs(prof - med)) + 1e-6)
-    conf = max(0.0, min(1.0, (peak - med) / (6*mad)))  # rough score
+        # Confidence (0–1): peak vs neighborhood
+        peak = prof[(xr - x0)]
+        med  = float(np.median(prof))
+        mad  = float(np.median(np.abs(prof - med)) + 1e-6)
+        conf = max(0.0, min(1.0, (peak - med) / (6*mad)))  # rough score
 
-    return xr, conf, prof
+        return xr, conf, prof
 
 
 # =============================================================================
@@ -83,7 +105,10 @@ def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
 class RightBoundaryDetector:
     """Right boundary detector for WeChat message cards using pre-processed high-contrast images"""
     
-    def __init__(self):
+    def __init__(self, debug_mode: bool = False):
+        # Debug mode control for visualization generation
+        self.debug_mode = debug_mode
+        
         # Optimized Photoshop levels parameters for high contrast preprocessing
         self.INPUT_BLACK_POINT = 32     # Optimized input black point (27-36 range) for distinctive edges
         self.INPUT_WHITE_POINT = 107    # Photoshop input white point
@@ -93,7 +118,7 @@ class RightBoundaryDetector:
         self.EDGE_THRESHOLD = 0.10      # 10% threshold for internal preprocessing
         self.PREPROCESSED_THRESHOLD = 0.005  # 0.5% threshold for white-to-black transitions
         self.SMOOTHING_SIZE = 5         # Smoothing kernel size (reduced for sharper transitions)
-        self.MIN_BOUNDARY_PX = 800      # Minimum boundary position for message content
+        self.MIN_BOUNDARY_PX = 200      # Minimum boundary position for message content (lowered to detect left boundaries)
         
     def _apply_level_adjustment(self, gray: np.ndarray) -> np.ndarray:
         """
@@ -150,6 +175,166 @@ class RightBoundaryDetector:
         except Exception as e:
             print(f"  ⚠️ Could not save preprocessing image: {e}")
     
+    def _generate_horizontal_differences_heatmap(self, diff_x: np.ndarray, detected_boundary: int = None, filename_suffix: str = "horizontal_differences") -> str:
+        """
+        Generate horizontal pixel differences heatmap visualization similar to your reference image
+        
+        Args:
+            diff_x: Horizontal pixel differences array from np.diff()
+            detected_boundary: X-axis position of detected boundary (optional, for overlay)
+            filename_suffix: Suffix for the output filename
+            
+        Returns:
+            Path to saved heatmap image
+        """
+        try:
+            import matplotlib.pyplot as plt
+            import matplotlib.gridspec as gridspec
+            from datetime import datetime
+            
+            print(f"  🎨 Generating horizontal differences heatmap with profile plot...")
+            
+            # Create figure with precise GridSpec layout for identical physical x-axis lengths
+            fig = plt.figure(figsize=(16, 12))
+            
+            # Create grid: plotting area (90%) + colorbar space (10%)
+            # This ensures colorbar doesn't affect plot widths
+            gs = gridspec.GridSpec(2, 2, 
+                                 width_ratios=[10, 1],  # 10:1 ratio for plot:colorbar  
+                                 height_ratios=[3, 1],   # 3:1 ratio for heatmap:profile
+                                 left=0.08, right=0.95, top=0.95, bottom=0.08,
+                                 wspace=0.05, hspace=0.3)
+            
+            # Both plots use the same column (0) for identical physical width
+            ax_heatmap = fig.add_subplot(gs[0, 0])  # Top plot, column 0
+            ax_profile = fig.add_subplot(gs[1, 0])   # Bottom plot, column 0
+            cax = fig.add_subplot(gs[0, 1])         # Colorbar in column 1
+            
+            # HEATMAP (Top Plot): Use RdBu_r colormap with explicit extent for coordinate alignment
+            height, width = diff_x.shape
+            
+            # Define coordinate system that matches the actual image pixels (0 to width-1)
+            x_extent = [0, width - 1]  # Use actual image pixel coordinates  
+            y_extent = [height, 0]     # Image coordinates (top=0, bottom=height)
+            
+            im = ax_heatmap.imshow(diff_x, cmap='RdBu_r', aspect='auto', vmin=-200, vmax=200,
+                                  extent=[x_extent[0], x_extent[1], y_extent[0], y_extent[1]])
+            
+            # Add colorbar in dedicated space to avoid affecting plot widths
+            cbar = plt.colorbar(im, cax=cax)
+            cbar.set_label('Pixel Difference Value', rotation=270, labelpad=20, fontsize=12)
+            
+            # Set title and labels for heatmap
+            ax_heatmap.set_title('Horizontal Pixel Differences (Red Lines = Target Boundaries)', fontsize=16, fontweight='bold', pad=20)
+            ax_heatmap.set_xlabel('X Position (pixels)', fontsize=12)
+            ax_heatmap.set_ylabel('Y Position (pixels)', fontsize=12)
+            
+            # Add red vertical line at detected boundary position in heatmap
+            if detected_boundary is not None:
+                ax_heatmap.axvline(x=detected_boundary, color='red', linewidth=3, alpha=0.9, 
+                                  label=f'Detected Boundary: {detected_boundary}px', linestyle='-')
+                
+                # Add red circle markers at top and bottom for visibility
+                ax_heatmap.scatter([detected_boundary, detected_boundary], [50, diff_x.shape[0]-50], 
+                                  color='red', s=120, marker='o', zorder=5, edgecolor='white', linewidth=2)
+                
+                ax_heatmap.legend(loc='upper right', fontsize=12, framealpha=0.9)
+            
+            # PROFILE PLOT (Bottom): Line plot showing pixel difference profile vs x-position
+            print(f"  📊 Creating pixel difference profile plot with exact coordinate projection...")
+            
+            # Calculate average pixel differences across Y-axis for each X position
+            profile_data = np.mean(diff_x, axis=0)
+            
+            # Use the same coordinate system as the heatmap for perfect alignment
+            num_points = len(profile_data)
+            
+            # Create x-coordinates that match heatmap exactly (0 to width-1)
+            actual_x_positions = np.linspace(0, width - 1, num_points)
+            
+            # Create line plot using real pixel coordinates (not indices)
+            ax_profile.plot(actual_x_positions, profile_data, 'b-', linewidth=2, label='Average Pixel Difference')
+            ax_profile.set_xlabel('X Position (pixels)', fontsize=12)
+            ax_profile.set_ylabel('Pixel Difference Value', fontsize=12)
+            ax_profile.set_title('Horizontal Pixel Difference Profile', fontsize=14, fontweight='bold')
+            ax_profile.grid(True, alpha=0.3)
+            
+            # Add zero line for reference
+            ax_profile.axhline(y=0, color='black', linestyle='-', alpha=0.5, linewidth=1)
+            
+            # Mark positive (red) and negative (blue) regions with background colors
+            ax_profile.axhspan(0, np.max(profile_data), alpha=0.1, color='red', label='Positive (Red) Regions')
+            ax_profile.axhspan(np.min(profile_data), 0, alpha=0.1, color='blue', label='Negative (Blue) Regions')
+            
+            # Add boundary markers to line plot using real pixel coordinates
+            if detected_boundary is not None:
+                # Find the corresponding profile value for the detected boundary position
+                # Map detected_boundary (pixel coordinate) to profile_data index
+                boundary_index = int(detected_boundary * num_points / (width - 1))
+                boundary_index = max(0, min(boundary_index, len(profile_data) - 1))  # Clamp to valid range
+                boundary_value = profile_data[boundary_index]
+                
+                # Use actual pixel coordinate (not index) for plotting
+                ax_profile.axvline(x=detected_boundary, color='red', linewidth=3, alpha=0.9,
+                                  linestyle='-', label=f'Detected Boundary: {detected_boundary}px')
+                
+                # Add marker dot at the boundary position using real coordinates
+                ax_profile.scatter([detected_boundary], [boundary_value], color='red', s=100, 
+                                  marker='o', zorder=5, edgecolor='white', linewidth=2)
+                
+                print(f"  📍 Red boundary line marked at x={detected_boundary}px (profile value: {boundary_value:.1f})")
+            
+            ax_profile.legend(loc='upper left', fontsize=10, framealpha=0.9)
+            
+            # Force exact x-axis alignment by setting identical limits AND tick positions
+            ax_heatmap.set_xlim(0, width - 1)
+            ax_profile.set_xlim(0, width - 1)
+            
+            # Generate identical tick positions for both plots
+            # Use major ticks every 200 pixels for clean alignment
+            major_ticks = np.arange(0, width, 200)
+            if major_ticks[-1] < width - 1:
+                major_ticks = np.append(major_ticks, width - 1)
+            
+            # Apply identical tick positions to both plots
+            ax_heatmap.set_xticks(major_ticks)
+            ax_profile.set_xticks(major_ticks)
+            
+            # Set identical tick labels (optional: format as integers)
+            tick_labels = [f'{int(tick)}' for tick in major_ticks]
+            ax_heatmap.set_xticklabels(tick_labels)
+            ax_profile.set_xticklabels(tick_labels)
+            
+            # Verify perfect alignment achieved
+            print(f"  📊 Perfect x-axis alignment achieved:")
+            print(f"      - Heatmap extent: {ax_heatmap.get_xlim()}")
+            print(f"      - Profile extent: {ax_profile.get_xlim()}")
+            print(f"      - Coordinate range: 0 to {width-1} pixels")
+            print(f"      - Tick positions: {major_ticks.tolist()}")
+            print(f"      - Alignment status: {'✅ PERFECT' if ax_heatmap.get_xlim() == ax_profile.get_xlim() else '⚠️ MISALIGNED'}")
+            print(f"      - Physical width alignment: ✅ IDENTICAL (GridSpec ensures same column width)")
+            
+            # Generate timestamped filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{timestamp}_{filename_suffix}.png"
+            
+            # Save to screenshots directory
+            screenshot_dir = "pic/screenshots"
+            os.makedirs(screenshot_dir, exist_ok=True)
+            filepath = os.path.join(screenshot_dir, filename)
+            
+            plt.savefig(filepath, dpi=300, bbox_inches='tight')
+            plt.close()  # Clean up memory
+            
+            print(f"  🎨 Enhanced dual-plot visualization saved: {filename}")
+            print(f"      - Top: Horizontal differences heatmap")
+            print(f"      - Bottom: Pixel difference profile plot")
+            return filepath
+            
+        except Exception as e:
+            print(f"  ⚠️ Could not generate horizontal differences heatmap: {e}")
+            return ""
+    
     def detect_right_boundary(self, img: np.ndarray = None, img_width: int = None, preprocessed_image_path: str = None) -> int:
         """
         Simplified right boundary detection using horizontal pixel difference visualization
@@ -186,67 +371,108 @@ class RightBoundaryDetector:
         print(f"  📊 Creating horizontal pixel difference pattern")
         diff_x = np.diff(adjusted.astype(np.int16), axis=1)
         
-        # Step 3: Detect blue regions (strong negative transitions)
-        blue_threshold = -100  # Blue regions in your visualization
-        blue_regions = diff_x < blue_threshold
+        # Generate initial horizontal differences heatmap visualization (debug mode only)
+        if self.debug_mode:
+            self._generate_horizontal_differences_heatmap(diff_x, None, "03_horizontal_differences")
         
-        print(f"  🔵 Detecting blue regions (transitions < {blue_threshold})")
-        blue_pixel_count = np.sum(blue_regions)
-        print(f"  📍 Found {blue_pixel_count} blue pixels representing strong transitions")
+        # Step 3: Detect red regions (strong positive transitions) - these are the boundaries we want
+        red_threshold = 100  # Red regions in your visualization (high positive values)
+        red_regions = diff_x > red_threshold
         
-        # Step 4: Find rightmost boundary from blue regions
-        # Count blue pixels per column (vertical projection)
-        blue_column_intensity = np.sum(blue_regions, axis=0)
+        print(f"  🔴 Detecting red regions (transitions > {red_threshold})")
+        red_pixel_count = np.sum(red_regions)
+        print(f"  📍 Found {red_pixel_count} red pixels representing strong transitions")
         
-        # Search in reasonable boundary range
-        search_start = int(img_width * 0.4)  # Skip left sidebar area
-        search_end = int(img_width * 0.95)   # Skip right edge artifacts
+        # Step 4: Find FIRST (leftmost) boundary from red regions
+        # Count red pixels per column (vertical projection)
+        red_column_intensity = np.sum(red_regions, axis=0)
         
-        print(f"  🔍 Searching for rightmost blue region in {search_start}-{search_end}px")
+        # Search in reasonable boundary range (adjusted to capture left boundaries around 400px)
+        search_start = int(img_width * 0.25)  # Start earlier to capture boundaries around 400px
+        search_end = int(img_width * 0.95)    # Skip right edge artifacts
         
-        # Find columns with significant blue intensity (boundary regions)
-        min_blue_intensity = 2  # Minimum blue pixels per column to be considered a boundary
+        print(f"  🔍 Searching for FIRST red region from left in {search_start}-{search_end}px")
+        
+        # Find columns with significant red intensity (boundary regions)
+        min_red_intensity = 2  # Minimum red pixels per column to be considered a boundary
         boundary_candidates = []
         
-        for x in range(search_start, min(search_end, len(blue_column_intensity))):
-            if blue_column_intensity[x] >= min_blue_intensity:
-                boundary_candidates.append((x, blue_column_intensity[x]))
+        for x in range(search_start, min(search_end, len(red_column_intensity))):
+            if red_column_intensity[x] >= min_red_intensity:
+                boundary_candidates.append((x, red_column_intensity[x]))
         
-        print(f"  🎯 Found {len(boundary_candidates)} boundary candidates with blue regions")
+        print(f"  🎯 Found {len(boundary_candidates)} boundary candidates with red regions")
         
-        # Step 5: Select rightmost boundary
+        # Enhanced red line detection reporting - show x-axis positions
         if boundary_candidates:
-            # Sort by position (rightmost first)
-            boundary_candidates.sort(key=lambda b: b[0], reverse=True)
+            print(f"  📍 Red Line X-Axis Position Analysis:")
+            # Show top 10 strongest red regions with their x-axis positions
+            top_candidates = sorted(boundary_candidates, key=lambda b: b[1], reverse=True)[:10]
+            for i, (x, intensity) in enumerate(top_candidates, 1):
+                print(f"      {i:2d}. x-axis position: {x:4d}px, red intensity: {intensity:3d}")
             
-            # Select the rightmost boundary above minimum threshold
+            # Show leftmost red regions specifically (these are our targets)
+            leftmost_candidates = sorted(boundary_candidates, key=lambda b: b[0])[:5]
+            print(f"  📍 LEFTMOST Red Line Positions (Target Boundaries):")
+            for i, (x, intensity) in enumerate(leftmost_candidates, 1):
+                print(f"      {i}. x={x:4d}px (red intensity: {intensity:3d})")
+        
+        # Step 5: Select STRONGEST red boundary (highest intensity)
+        if boundary_candidates:
+            # Sort by intensity (strongest first)
+            boundary_candidates.sort(key=lambda b: b[1], reverse=True)
+            
+            # Select the strongest boundary above minimum threshold
             for x, intensity in boundary_candidates:
                 if x >= self.MIN_BOUNDARY_PX:
-                    print(f"  ✅ Rightmost blue boundary detected: {x}px (blue intensity: {intensity})")
+                    print(f"  ✅ RED LINE DETECTED ON X-AXIS (STRONGEST BOUNDARY):")
+                    print(f"      🎯 X-axis position: {x}px")
+                    print(f"      🔴 Red intensity: {intensity} pixels")
+                    print(f"      📏 Distance from left edge: {x}px")
+                    print(f"      📊 Strongest valid boundary: ✅ YES")
+                    # Generate final heatmap with detected boundary marked (debug mode only)
+                    if self.debug_mode:
+                        self._generate_horizontal_differences_heatmap(diff_x, x, "04_horizontal_differences_with_boundary")
                     return x
             
             # Fallback to best available
             x, intensity = boundary_candidates[0]
-            print(f"  ⚠️ Using best blue boundary (below min): {x}px (intensity: {intensity})")
+            print(f"  ⚠️ RED LINE FALLBACK DETECTION:")
+            print(f"      🎯 X-axis position: {x}px")
+            print(f"      🔴 Red intensity: {intensity} pixels")
+            print(f"      📏 Distance from left edge: {x}px")
+            print(f"      📊 First valid boundary: ⚠️ BELOW MINIMUM")
+            # Generate final heatmap with detected boundary marked (debug mode only)
+            if self.debug_mode:
+                self._generate_horizontal_differences_heatmap(diff_x, x, "04_horizontal_differences_with_boundary")
             return x
         
         # Final fallback
         fallback = int(img_width * 0.8)
-        print(f"  ❌ No blue regions found, using geometric fallback: {fallback}px")
+        print(f"  ❌ NO RED LINES DETECTED - GEOMETRIC FALLBACK:")
+        print(f"      🎯 X-axis position: {fallback}px")
+        print(f"      📏 Distance from left edge: {fallback}px")
+        print(f"      📊 Method: Geometric estimation (80% of width)")
+        # Generate final heatmap with fallback boundary marked (debug mode only)
+        if self.debug_mode:
+            self._generate_horizontal_differences_heatmap(diff_x, fallback, "04_horizontal_differences_with_boundary")
         return fallback
 
 
 class SimpleWidthDetector:
     """Enhanced width detector with dual-boundary coordination and visual marker integration"""
     
-    def __init__(self):
+    def __init__(self, debug_mode: bool = False):
         # Simple parameters for width detection only
         self.CONVERSATION_WIDTH_RATIO = 0.65  # Focus on left 65% of screen where cards are
         self.EDGE_THRESHOLD_LOW = 30
         self.EDGE_THRESHOLD_HIGH = 100
         
+        # Debug mode control for visualization generation
+        self.debug_mode = debug_mode
+        
         # Initialize right boundary detector with enhanced capabilities
-        self.right_detector = RightBoundaryDetector()
+        self.right_detector = RightBoundaryDetector(debug_mode=debug_mode)
         
         # Dual-boundary coordination storage for blue line visualization integration
         self._boundary_markers = {
@@ -326,8 +552,9 @@ class SimpleWidthDetector:
         # Phase 5: Boundary Relationship Analysis
         self._analyze_boundary_relationships(left_boundary, right_boundary, width, img_width)
         
-        # Phase 6: Enhanced Visual Output with Blue Line Integration
-        self._create_enhanced_visual_result(img, image_path)
+        # Phase 6: Enhanced Visual Output with Blue Line Integration (only in debug mode)
+        if self.debug_mode:
+            self._create_enhanced_visual_result(img, image_path)
         
         return left_boundary, right_boundary, width
     
@@ -644,9 +871,9 @@ class CardAvatarDetector:
     Specifically optimized for WeChat message card layouts
     """
     
-    def __init__(self):
+    def __init__(self, debug_mode: bool = False):
         # Initialize width detector for dynamic boundary detection
-        self.width_detector = SimpleWidthDetector()
+        self.width_detector = SimpleWidthDetector(debug_mode=debug_mode)
         
         # Avatar size constraints (adjustable based on DPI)
         self.MIN_AVATAR_SIZE = 25       # Minimum avatar dimension
@@ -991,9 +1218,9 @@ class CardBoundaryDetector:
     Uses avatar positions to determine message card boundaries
     """
     
-    def __init__(self):
-        self.avatar_detector = CardAvatarDetector()
-        self.width_detector = SimpleWidthDetector()
+    def __init__(self, debug_mode: bool = False):
+        self.avatar_detector = CardAvatarDetector(debug_mode=debug_mode)
+        self.width_detector = SimpleWidthDetector(debug_mode=debug_mode)
         
         # Card boundary parameters
         self.MIN_CARD_HEIGHT = 60       # Minimum height for a card
@@ -1303,8 +1530,8 @@ class ContactNameBoundaryDetector:
     Detects white text boundaries above avatar center lines without OCR
     """
     
-    def __init__(self):
-        self.card_boundary_detector = CardBoundaryDetector()
+    def __init__(self, debug_mode: bool = False):
+        self.card_boundary_detector = CardBoundaryDetector(debug_mode=debug_mode)
         
         # White text detection parameters
         self.WHITE_THRESHOLD_MIN = 180      # Minimum brightness for white text
@@ -1389,11 +1616,11 @@ class ContactNameBoundaryDetector:
 
     def _detect_name_boundary_for_card(self, img: np.ndarray, card: Dict) -> Dict:
         """
-        Detect name boundary for a single card
+        Detect name boundary for a single card using the detected name-time boundary
         
         Args:
             img: Original image as numpy array
-            card: Card dictionary with boundary and avatar data
+            card: Card dictionary with boundary, time box, and avatar data
             
         Returns:
             Enhanced card dictionary with name boundary information
@@ -1401,8 +1628,13 @@ class ContactNameBoundaryDetector:
         enhanced_card = card.copy()
         
         try:
-            # Create adaptive search region based on card and avatar boundaries
-            search_region = self._create_adaptive_search_region(card)
+            # Check if name-time boundary was detected
+            if card.get("name_time_boundary"):
+                # Use the detected boundary to create search region
+                search_region = self._create_search_region_with_boundary(card)
+            else:
+                # Fallback to original adaptive search region
+                search_region = self._create_adaptive_search_region(card)
             
             if search_region is None:
                 return enhanced_card
@@ -1428,6 +1660,44 @@ class ContactNameBoundaryDetector:
             print(f"    ⚠️ Card {card['card_id']}: Name detection failed - {e}")
         
         return enhanced_card
+    
+    def _create_search_region_with_boundary(self, card: Dict) -> Optional[Tuple[int, int, int, int]]:
+        """
+        Create search region for name detection using the detected name-time boundary
+        
+        Args:
+            card: Card dictionary with name_time_boundary data
+            
+        Returns:
+            Search region as (x, y, w, h) or None if invalid
+        """
+        card_bbox = card["bbox"]  # [x, y, w, h]
+        avatar_bbox = card["avatar"]["bbox"]  # [x, y, w, h]
+        boundary_y = card["name_time_boundary"]["y"]
+        
+        card_x, card_y, card_w, card_h = card_bbox
+        avatar_x, avatar_y, avatar_w, avatar_h = avatar_bbox
+        
+        # Start search region below the detected boundary
+        search_top = boundary_y + 2  # Small gap below boundary
+        search_bottom = card_y + card_h - self.SEARCH_MARGIN_TOP  # End before card bottom
+        
+        # Horizontal bounds: right of avatar to card edge  
+        search_left = avatar_x + avatar_w + self.SEARCH_MARGIN_LEFT  # Start right of avatar
+        search_right = card_x + card_w - self.SEARCH_MARGIN_RIGHT    # End before card edge
+        
+        # Validate search region dimensions
+        if search_right <= search_left or search_bottom <= search_top:
+            return None
+            
+        search_width = search_right - search_left
+        search_height = search_bottom - search_top
+        
+        # Ensure minimum search area
+        if search_width < self.MIN_NAME_WIDTH or search_height < self.MIN_NAME_HEIGHT:
+            return None
+        
+        return (search_left, search_top, search_width, search_height)
     
     def _create_adaptive_search_region(self, card: Dict) -> Optional[Tuple[int, int, int, int]]:
         """
@@ -1712,8 +1982,8 @@ class TimeBoxDetector:
     Detects timestamp regions using column projection and statistical analysis
     """
     
-    def __init__(self):
-        self.card_boundary_detector = CardBoundaryDetector()
+    def __init__(self, debug_mode: bool = False):
+        self.card_boundary_detector = CardBoundaryDetector(debug_mode=debug_mode)
         
         # WeChat-optimized layout parameters for upper-center time detection
         self.CARD_WIDTH_FRAC = 0.7      # Search up to 70% of card width
@@ -1805,7 +2075,7 @@ class TimeBoxDetector:
 
     def _detect_time_box_for_card(self, img: np.ndarray, card: Dict, x_panel_right: int) -> Dict:
         """
-        Detect time box for a single card using upper region density pattern analysis
+        Detect time box for a single card using boundary detection and upper region analysis
         
         Args:
             img: Original image as numpy array
@@ -1813,7 +2083,7 @@ class TimeBoxDetector:
             x_panel_right: Right boundary of the panel (kept for compatibility)
             
         Returns:
-            Enhanced card dictionary with time box information
+            Enhanced card dictionary with time box and name-time boundary information
         """
         enhanced_card = card.copy()
         
@@ -1825,8 +2095,26 @@ class TimeBoxDetector:
             # Initialize debug info collection if requested
             debug_info = {} if hasattr(self, '_collect_debug') and self._collect_debug else None
             
-            # Apply density-based time box detection in upper region
-            time_result = self._upper_density_time_box(img, card_bbox, avatar_data, debug_info)
+            # Step 1: Detect the boundary between name and timestamp regions
+            boundary_y = self._detect_name_time_horizontal_boundary(img, card_bbox, avatar_data)
+            
+            if boundary_y is not None:
+                enhanced_card["name_time_boundary"] = {
+                    "y": boundary_y,
+                    "detection_method": "horizontal_boundary_analysis",
+                    "avatar_center_y": avatar_data["center"][1]
+                }
+                # Use detected boundary for time box detection
+                time_result = self._upper_density_time_box_with_boundary(img, card_bbox, avatar_data, boundary_y, debug_info)
+            else:
+                # Fallback to original method using avatar center as boundary
+                enhanced_card["name_time_boundary"] = {
+                    "y": avatar_data["center"][1],  # Use avatar center as fallback
+                    "detection_method": "avatar_center_fallback",
+                    "avatar_center_y": avatar_data["center"][1]
+                }
+                # Apply original density-based time box detection in upper region
+                time_result = self._upper_density_time_box(img, card_bbox, avatar_data, debug_info)
             
             if time_result:
                 tx, ty, tw, th, density_score = time_result
@@ -2008,6 +2296,224 @@ class TimeBoxDetector:
                 'detection_successful': True,
                 'contours_found': len(contours),
                 'best_contour_score': best_score,
+                'timestamp_bbox': [tx0, ty, tw, th],
+                'density_score': density_score
+            })
+        
+        return (int(tx0), int(ty), int(tw), int(th), float(density_score))
+    
+    def _detect_name_time_horizontal_boundary(self, img: np.ndarray, card_bbox: List[int], avatar_data: Dict) -> Optional[int]:
+        """
+        Detect the horizontal boundary between name and timestamp regions
+        
+        This method analyzes the region to the right of the avatar to find the
+        visual separator between the contact name (below) and timestamp (above).
+        
+        Args:
+            img: Original BGR image
+            card_bbox: Card boundaries as [x, y, w, h]
+            avatar_data: Avatar information including bbox and center
+            
+        Returns:
+            Y-coordinate of the boundary line, or None if not detected
+        """
+        rx, ry, rw, rh = map(int, card_bbox)
+        avatar_bbox = avatar_data["bbox"]
+        avatar_center = avatar_data["center"]
+        
+        # Define analysis region: from avatar right edge to card edge
+        avatar_right = avatar_bbox[0] + avatar_bbox[2]
+        analysis_left = avatar_right + 5
+        analysis_right = rx + rw - 5
+        analysis_top = ry + 5
+        analysis_bottom = min(ry + rh - 5, avatar_center[1] + 30)  # Focus on upper region
+        
+        # Validate region
+        if analysis_left >= analysis_right or analysis_top >= analysis_bottom:
+            return None
+            
+        # Extract ROI for analysis
+        roi = img[analysis_top:analysis_bottom, analysis_left:analysis_right]
+        
+        # Convert to grayscale for intensity analysis
+        gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        
+        # Apply bilateral filter to reduce noise while preserving edges
+        filtered = cv2.bilateralFilter(gray_roi, d=5, sigmaColor=35, sigmaSpace=35)
+        
+        # Calculate horizontal projection (row-wise intensity average)
+        horizontal_proj = np.mean(filtered, axis=1)
+        
+        # Look for significant gaps or transitions in horizontal projection
+        # These indicate boundaries between text regions
+        
+        # Method 1: Find minimum intensity row (likely gap between name and time)
+        if len(horizontal_proj) > 10:
+            # Smooth the projection to reduce noise
+            kernel_size = min(5, len(horizontal_proj) // 3)
+            if kernel_size % 2 == 0:
+                kernel_size += 1
+            smoothed = cv2.GaussianBlur(horizontal_proj.reshape(-1, 1), (1, kernel_size), 0).ravel()
+            
+            # Find local minima (potential boundaries)
+            minima = []
+            for i in range(1, len(smoothed) - 1):
+                if smoothed[i] < smoothed[i-1] and smoothed[i] < smoothed[i+1]:
+                    # Check if it's a significant minimum
+                    left_peak = max(smoothed[max(0, i-5):i])
+                    right_peak = max(smoothed[i+1:min(len(smoothed), i+6)])
+                    depth = min(left_peak - smoothed[i], right_peak - smoothed[i])
+                    
+                    if depth > np.std(smoothed) * 0.3:  # Significant dip
+                        minima.append((i, depth))
+            
+            # Choose the most prominent minimum in the middle region
+            if minima:
+                # Prefer minima closer to avatar center
+                avatar_center_relative = avatar_center[1] - analysis_top
+                
+                best_minimum = None
+                best_score = -1
+                
+                for idx, depth in minima:
+                    # Score based on depth and proximity to expected position
+                    distance_from_center = abs(idx - avatar_center_relative)
+                    score = depth * 100 / (distance_from_center + 10)  # Higher score for deeper, closer minima
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_minimum = idx
+                
+                if best_minimum is not None:
+                    # Convert to absolute Y coordinate
+                    boundary_y = analysis_top + best_minimum
+                    return boundary_y
+        
+        # Method 2: Use avatar center as fallback if no clear boundary found
+        return None
+    
+    def _upper_density_time_box_with_boundary(self, bgr: np.ndarray, row_box: List[int], 
+                                             avatar_data: Dict, boundary_y: int, 
+                                             debug_info: Dict = None) -> Optional[Tuple[int, int, int, int, float]]:
+        """
+        Density-based time box detection using explicit boundary
+        
+        Args:
+            bgr: Original BGR image
+            row_box: Card boundaries as [x, y, w, h]
+            avatar_data: Avatar information
+            boundary_y: Y-coordinate of name-time boundary
+            debug_info: Optional debug information dictionary
+            
+        Returns:
+            Tuple of (x, y, w, h, density_score) or None if not found
+        """
+        rx, ry, rw, rh = map(int, row_box)
+        avatar_bbox = avatar_data["bbox"]
+        
+        # Calculate search region (above the boundary)
+        avatar_right = avatar_bbox[0] + avatar_bbox[2]
+        
+        # Horizontal bounds: from avatar right edge to full card width
+        search_left = avatar_right + 5
+        search_right = rx + rw - 5
+        
+        # Vertical bounds: from card top to the detected boundary
+        search_top = ry + 5
+        search_bottom = boundary_y
+        
+        # Validate search region
+        if search_left >= search_right or search_top >= search_bottom:
+            return None
+        if search_right - search_left < self.MIN_W_PX or search_bottom - search_top < 6:
+            return None
+        
+        # Extract ROI and process using existing method
+        roi = bgr[search_top:search_bottom, search_left:search_right]
+        
+        # Store debug information if requested
+        if debug_info is not None:
+            debug_info.update({
+                'search_region': {
+                    'left': search_left,
+                    'right': search_right,
+                    'top': search_top,
+                    'bottom': search_bottom,
+                    'width': search_right - search_left,
+                    'height': search_bottom - search_top
+                },
+                'boundary_y': boundary_y,
+                'boundary_method': 'explicit_detection'
+            })
+        
+        # Continue with existing density analysis logic
+        # (Using the same processing as _upper_density_time_box but with new boundaries)
+        
+        # Pre-process ROI for timestamp detection
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        
+        # Apply bilateral filter
+        filtered = cv2.bilateralFilter(gray, d=self.BILATERAL_D, 
+                                      sigmaColor=self.BILATERAL_SIGMA_COLOR, 
+                                      sigmaSpace=self.BILATERAL_SIGMA_SPACE)
+        
+        # Apply CLAHE for contrast enhancement
+        clahe = cv2.createCLAHE(clipLimit=self.CLAHE_CLIP, 
+                               tileGridSize=(self.CLAHE_GRID, self.CLAHE_GRID))
+        enhanced = clahe.apply(filtered)
+        
+        # Apply adaptive threshold
+        binary = cv2.adaptiveThreshold(enhanced, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                      cv2.THRESH_BINARY_INV, self.ADAPT_BLOCK, self.ADAPT_C)
+        
+        # Find contours
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            return None
+        
+        # Filter and score contours for timestamp characteristics
+        best_contour = None
+        best_score = 0
+        
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            
+            # Basic size filtering for timestamp
+            if w < 10 or h < 6 or w > roi.shape[1] * 0.8 or h > roi.shape[0] * 0.8:
+                continue
+            
+            # Calculate score based on position and size (timestamps are usually small and right-aligned)
+            position_score = x / roi.shape[1]  # Prefer right-side position
+            size_score = 1.0 - (w * h) / (roi.shape[0] * roi.shape[1])  # Prefer smaller sizes
+            aspect_ratio = w / h
+            aspect_score = 1.0 if 1.5 <= aspect_ratio <= 6.0 else 0.5  # Timestamps have specific aspect ratios
+            
+            score = position_score * 0.3 + size_score * 0.4 + aspect_score * 0.3
+            
+            if score > best_score:
+                best_score = score
+                best_contour = contour
+        
+        if best_contour is None:
+            return None
+        
+        # Get bounding box of best timestamp contour
+        x, y, w, h = cv2.boundingRect(best_contour)
+        
+        # Convert to absolute coordinates
+        tx0 = search_left + x
+        ty = search_top + y
+        tw = w
+        th = h
+        
+        # Calculate density score
+        contour_area = cv2.contourArea(best_contour)
+        density_score = contour_area / max(1, w * h) * 100
+        
+        if debug_info is not None:
+            debug_info.update({
+                'detection_successful': True,
                 'timestamp_bbox': [tx0, ty, tw, th],
                 'density_score': density_score
             })
@@ -2359,171 +2865,179 @@ class TimeBoxDetector:
 # ENHANCED API FUNCTIONS FOR LIVE PROCESSING
 # =============================================================================
 
-def capture_and_process_screenshot(output_dir: str = "pic/screenshots", 
-                                  custom_filename: str = None) -> Optional[Tuple[str, Dict]]:
-    """
-    Capture a fresh WeChat screenshot and process it for card analysis
-    
-    Args:
-        output_dir: Directory to save screenshot and visualizations
-        custom_filename: Custom filename for screenshot, auto-generated if None
+# Import screenshot processing functions from screenshot_processor module
+if MODULAR_IMPORTS_AVAILABLE:
+    capture_and_process_screenshot = screenshot_processor.capture_and_process_screenshot
+    process_screenshot_file = screenshot_processor.process_screenshot_file
+    process_current_wechat_window = screenshot_processor.process_current_wechat_window
+    get_live_card_analysis = screenshot_processor.get_live_card_analysis
+else:
+    # Legacy inline implementations for backward compatibility
+    def capture_and_process_screenshot(output_dir: str = "pic/screenshots", 
+                                      custom_filename: str = None) -> Optional[Tuple[str, Dict]]:
+        """
+        Capture a fresh WeChat screenshot and process it for card analysis
         
-    Returns:
-        Tuple of (screenshot_path, analysis_results) or None if failed
-        
-    Usage:
-        screenshot_path, results = capture_and_process_screenshot()
-        if results:
-            print(f"Found {results['cards_detected']} cards")
-    """
-    if not SCREENSHOT_AVAILABLE:
-        print("❌ Screenshot capture not available. Install required module.")
-        return None
-        
-    try:
-        print("\n🎯 Live WeChat Screenshot & Card Processing")
-        print("=" * 50)
-        
-        # Step 1: Capture fresh screenshot
-        print("\n📸 Step 1: Capturing WeChat screenshot...")
-        screenshot_path = capture_screenshot(output_dir=output_dir, filename=custom_filename)
-        
-        if not screenshot_path:
-            print("❌ Failed to capture screenshot")
+        Args:
+            output_dir: Directory to save screenshot and visualizations
+            custom_filename: Custom filename for screenshot, auto-generated if None
+            
+        Returns:
+            Tuple of (screenshot_path, analysis_results) or None if failed
+            
+        Usage:
+            screenshot_path, results = capture_and_process_screenshot()
+            if results:
+                print(f"Found {results['cards_detected']} cards")
+        """
+        if not SCREENSHOT_AVAILABLE:
+            print("❌ Screenshot capture not available. Install required module.")
             return None
             
-        print(f"✅ Screenshot captured: {os.path.basename(screenshot_path)}")
-        
-        # Step 2: Process with card analysis
-        print("\n🔍 Step 2: Processing card analysis...")
-        results = process_screenshot_file(screenshot_path)
-        
-        if results:
-            print(f"\n✅ Analysis complete:")
-            print(f"   Width: {results.get('width_detected')}px")  
-            print(f"   Avatars: {results.get('avatars_detected')}")
-            print(f"   Cards: {results.get('cards_detected')}")
-            return screenshot_path, results
-        else:
-            print("❌ Analysis failed")
-            return None
-            
-    except Exception as e:
-        print(f"❌ Error in capture_and_process_screenshot: {e}")
-        return None
-
-def process_screenshot_file(image_path: str) -> Optional[Dict]:
-    """
-    Process a screenshot file and return comprehensive analysis results
-    
-    Args:
-        image_path: Path to screenshot file to analyze
-        
-    Returns:
-        Dictionary with analysis results or None if failed
-    """
-    try:
-        # Initialize processors
-        width_detector = SimpleWidthDetector()
-        avatar_detector = CardAvatarDetector() 
-        boundary_detector = CardBoundaryDetector()
-        
-        results = {}
-        
-        # 1. Width Detection
-        width_result = width_detector.detect_width(image_path)
-        if width_result:
-            left, right, width = width_result
-            results['width_detected'] = width
-            results['width_boundaries'] = {'left': left, 'right': right}
-        else:
-            results['width_detected'] = None
-            results['width_boundaries'] = None
-            
-        # 2. Avatar Detection  
-        avatars, avatar_info = avatar_detector.detect_avatars(image_path)
-        results['avatars_detected'] = len(avatars)
-        results['avatar_list'] = avatars
-        results['avatar_detection_info'] = avatar_info
-        
-        # 3. Card Boundary Detection
-        cards, card_info = boundary_detector.detect_cards(image_path)
-        results['cards_detected'] = len(cards)
-        results['card_list'] = cards  
-        results['card_detection_info'] = card_info
-        
-        # 4. Summary
-        results['processing_successful'] = True
-        results['image_processed'] = os.path.basename(image_path)
-        
-        return results
-        
-    except Exception as e:
-        print(f"❌ Error processing screenshot: {e}")
-        return None
-
-def process_current_wechat_window() -> Optional[Dict]:
-    """
-    Convenience function: Capture current WeChat window and analyze cards
-    
-    Returns:
-        Dictionary with complete analysis results or None if failed
-        
-    Usage:
-        results = process_current_wechat_window()
-        if results:
-            for i, card in enumerate(results['card_list'], 1):
-                print(f"Card {i}: {card['width']}×{card['height']}px")
-    """
-    result = capture_and_process_screenshot()
-    if result:
-        screenshot_path, analysis = result
-        return analysis
-    return None
-
-def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tuple[Dict, Dict]]:
-    """
-    Get comprehensive live card analysis with optional visualizations
-    
-    Args:
-        include_visualizations: Whether to generate visualization files
-        
-    Returns:
-        Tuple of (analysis_results, visualization_paths) or None if failed
-    """
-    result = capture_and_process_screenshot()
-    if not result:
-        return None
-        
-    screenshot_path, analysis = result
-    
-    visualization_paths = {}
-    if include_visualizations:
         try:
-            # Generate all visualizations
-            width_detector = SimpleWidthDetector()  
-            avatar_detector = CardAvatarDetector()
-            boundary_detector = CardBoundaryDetector()
+            print("\n🎯 Live WeChat Screenshot & Card Processing")
+            print("=" * 50)
             
-            # Width visualization
-            if analysis.get('width_detected'):
-                width_vis = width_detector.create_width_visualization(screenshot_path)
-                visualization_paths['width'] = width_vis
+            # Step 1: Capture fresh screenshot
+            print("\n📸 Step 1: Capturing WeChat screenshot...")
+            screenshot_path = capture_screenshot(output_dir=output_dir, filename=custom_filename)
+            
+            if not screenshot_path:
+                print("❌ Failed to capture screenshot")
+                return None
                 
-            # Avatar visualization  
-            if analysis.get('avatars_detected'):
-                avatar_vis = avatar_detector.create_advanced_avatar_visualization(screenshot_path) 
-                visualization_paths['avatars'] = avatar_vis
-                
-            # Card boundary visualization
-            if analysis.get('cards_detected'):
-                card_vis = boundary_detector.create_card_boundary_visualization(screenshot_path)
-                visualization_paths['cards'] = card_vis
+            print(f"✅ Screenshot captured: {os.path.basename(screenshot_path)}")
+            
+            # Step 2: Process with card analysis
+            print("\n🔍 Step 2: Processing card analysis...")
+            results = process_screenshot_file(screenshot_path)
+            
+            if results:
+                print(f"\n✅ Analysis complete:")
+                print(f"   Width: {results.get('width_detected')}px")  
+                print(f"   Avatars: {results.get('avatars_detected')}")
+                print(f"   Cards: {results.get('cards_detected')}")
+                return screenshot_path, results
+            else:
+                print("❌ Analysis failed")
+                return None
                 
         except Exception as e:
-            print(f"⚠️  Visualization generation failed: {e}")
+            print(f"❌ Error in capture_and_process_screenshot: {e}")
+            return None
+
+    def process_screenshot_file(image_path: str) -> Optional[Dict]:
+        """
+        Process a screenshot file and return comprehensive analysis results
+        
+        Args:
+            image_path: Path to screenshot file to analyze
             
-    return analysis, visualization_paths
+        Returns:
+            Dictionary with analysis results or None if failed
+        """
+        try:
+            # Initialize processors (debug_mode=False for normal processing)
+            width_detector = SimpleWidthDetector(debug_mode=False)
+            avatar_detector = CardAvatarDetector(debug_mode=False) 
+            boundary_detector = CardBoundaryDetector(debug_mode=False)
+            
+            results = {}
+            
+            # 1. Width Detection
+            width_result = width_detector.detect_width(image_path)
+            if width_result:
+                left, right, width = width_result
+                results['width_detected'] = width
+                results['width_boundaries'] = {'left': left, 'right': right}
+            else:
+                results['width_detected'] = None
+                results['width_boundaries'] = None
+                
+            # 2. Avatar Detection  
+            avatars, avatar_info = avatar_detector.detect_avatars(image_path)
+            results['avatars_detected'] = len(avatars)
+            results['avatar_list'] = avatars
+            results['avatar_detection_info'] = avatar_info
+            
+            # 3. Card Boundary Detection
+            cards, card_info = boundary_detector.detect_cards(image_path)
+            results['cards_detected'] = len(cards)
+            results['card_list'] = cards  
+            results['card_detection_info'] = card_info
+            
+            # 4. Summary
+            results['processing_successful'] = True
+            results['image_processed'] = os.path.basename(image_path)
+            
+            return results
+            
+        except Exception as e:
+            print(f"❌ Error processing screenshot: {e}")
+            return None
+
+    def process_current_wechat_window() -> Optional[Dict]:
+        """
+        Convenience function: Capture current WeChat window and analyze cards
+        
+        Returns:
+            Dictionary with complete analysis results or None if failed
+            
+        Usage:
+            results = process_current_wechat_window()
+            if results:
+                for i, card in enumerate(results['card_list'], 1):
+                    print(f"Card {i}: {card['width']}×{card['height']}px")
+        """
+        result = capture_and_process_screenshot()
+        if result:
+            screenshot_path, analysis = result
+            return analysis
+        return None
+
+    def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tuple[Dict, Dict]]:
+        """
+        Get comprehensive live card analysis with optional visualizations
+        
+        Args:
+            include_visualizations: Whether to generate visualization files
+            
+        Returns:
+            Tuple of (analysis_results, visualization_paths) or None if failed
+        """
+        result = capture_and_process_screenshot()
+        if not result:
+            return None
+            
+        screenshot_path, analysis = result
+        
+        visualization_paths = {}
+        if include_visualizations:
+            try:
+                # Generate all visualizations (debug_mode=False for internal processing)
+                width_detector = SimpleWidthDetector(debug_mode=False)  
+                avatar_detector = CardAvatarDetector(debug_mode=False)
+                boundary_detector = CardBoundaryDetector(debug_mode=False)
+                
+                # Width visualization
+                if analysis.get('width_detected'):
+                    width_vis = width_detector.create_width_visualization(screenshot_path)
+                    visualization_paths['width'] = width_vis
+                    
+                # Avatar visualization  
+                if analysis.get('avatars_detected'):
+                    avatar_vis = avatar_detector.create_visualization(screenshot_path) 
+                    visualization_paths['avatars'] = avatar_vis
+                    
+                # Card boundary visualization
+                if analysis.get('cards_detected'):
+                    card_vis = boundary_detector.create_card_visualization(screenshot_path)
+                    visualization_paths['cards'] = card_vis
+                    
+            except Exception as e:
+                print(f"⚠️  Visualization generation failed: {e}")
+                
+        return analysis, visualization_paths
 
 
 # =============================================================================
@@ -2550,54 +3064,25 @@ if __name__ == "__main__":
             print(f"   Avatars: {analysis.get('avatars_detected')}")
             print(f"   Cards: {analysis.get('cards_detected')}")
             
-            # Generate comprehensive visualizations
-            print(f"\n🎨 Step 2: Generating comprehensive visualizations...")
+            # Generate single comprehensive visualization (instead of multiple separate ones)
+            print(f"\n🎨 Step 2: Generating consolidated debug visualization...")
             try:
-                # Initialize detectors for visualizations
-                width_detector = SimpleWidthDetector()
-                avatar_detector = CardAvatarDetector()
-                boundary_detector = CardBoundaryDetector()
-                name_detector = ContactNameBoundaryDetector()
-                time_detector = TimeBoxDetector()
+                # Initialize one detector with debug mode for comprehensive visualization
+                debug_width_detector = SimpleWidthDetector(debug_mode=True)
                 
                 viz_results = {}
                 
-                # Width visualization
+                # Generate single comprehensive width+boundary visualization
                 if analysis.get('width_detected'):
-                    width_viz = width_detector.create_width_visualization(screenshot_path)
+                    width_viz = debug_width_detector.create_width_visualization(screenshot_path)
                     if width_viz:
-                        viz_results['width'] = width_viz
-                        print(f"   ✅ Width visualization: {width_viz}")
+                        viz_results['comprehensive'] = width_viz
+                        print(f"   ✅ Comprehensive visualization: {width_viz}")
+                        print(f"   📊 Contains: Width boundaries, pixel analysis, and boundary detection")
                     
-                # Avatar visualization  
-                if analysis.get('avatars_detected'):
-                    avatar_viz = avatar_detector.create_visualization(screenshot_path)
-                    if avatar_viz:
-                        viz_results['avatars'] = avatar_viz
-                        print(f"   ✅ Avatar visualization: {avatar_viz}")
-                    
-                # Card boundary visualization
-                if analysis.get('cards_detected'):
-                    card_viz = boundary_detector.create_card_visualization(screenshot_path)
-                    if card_viz:
-                        viz_results['cards'] = card_viz
-                        print(f"   ✅ Card boundary visualization: {card_viz}")
-                
-                # Time box detection visualization (moved before names)
-                if analysis.get('cards_detected'):
-                    print(f"\n⏰ Step 3: Processing timestamp boundaries...")
-                    time_viz = time_detector.create_time_box_visualization(screenshot_path)
-                    if time_viz:
-                        viz_results['times'] = time_viz
-                        print(f"   ✅ Complete analysis visualization: {time_viz}")
-                
-                # Contact name boundary visualization (moved after times)
-                if analysis.get('cards_detected'):
-                    print(f"\n🔍 Step 4: Processing contact name boundaries...")
-                    name_viz = name_detector.create_name_boundary_visualization(screenshot_path)
-                    if name_viz:
-                        viz_results['names'] = name_viz
-                        print(f"   ✅ Name boundary visualization: {name_viz}")
+                # Note: Individual avatar, card, time, and name visualizations are skipped 
+                # to prevent excessive file generation. The comprehensive width visualization
+                # already provides the core debugging information.
                 
                 print(f"\n📊 COMPLETE PROCESSING SUMMARY:")
                 print(f"   Original screenshot: {os.path.basename(screenshot_path)}")
@@ -2605,11 +3090,11 @@ if __name__ == "__main__":
                 print(f"   Avatars found: {analysis.get('avatars_detected')}")
                 print(f"   Cards identified: {analysis.get('cards_detected')}")
                 print(f"   Processing stages: Width → Avatars → Cards → Times → Names")
-                print(f"   Visualizations generated: {len(viz_results)} files")
+                print(f"   Debug visualizations: {len(viz_results)} consolidated files (reduced file generation)")
                 
                 print(f"\n✅ Complete WeChat card analysis pipeline finished!")
-                print(f"   📁 Check pic/screenshots/ for all visualization outputs")
-                print(f"   🎯 Final result: Complete analysis with all detected elements")
+                print(f"   📁 Check pic/screenshots/ for consolidated debug visualization")
+                print(f"   🎯 Final result: Complete analysis with streamlined debug output")
                     
             except Exception as e:
                 print(f"⚠️  Visualization generation failed: {e}")
@@ -2619,7 +3104,7 @@ if __name__ == "__main__":
             print("❌ Live capture failed. Trying to process latest available screenshot...")
             
             # Fallback: Try to find and process the latest screenshot
-            width_detector = SimpleWidthDetector()
+            width_detector = SimpleWidthDetector(debug_mode=False)
             latest_screenshot = width_detector.get_latest_screenshot()
             
             if latest_screenshot:
@@ -2649,7 +3134,7 @@ if __name__ == "__main__":
         print("💡 Required dependencies: pyautogui, Quartz (macOS), easyocr")
         
         # Try to process existing screenshots as fallback
-        width_detector = SimpleWidthDetector()
+        width_detector = SimpleWidthDetector(debug_mode=False)
         latest_screenshot = width_detector.get_latest_screenshot()
         
         if latest_screenshot:
