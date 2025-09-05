@@ -82,7 +82,38 @@ python step_diagnostic_server.py
 
 **API Endpoint**: `/api/verify-coordinates`
 
-### 5. API Connection Testing
+### 5. Contact Name Boundary Detector Testing
+
+**Button**: 📝 **Contact Name Boundary Detector (Section 5)**
+
+**Functionality**:
+- Tests the Contact Name Boundary Detector from the Card Processing module
+- Detects contact name boundaries in the upper section right of avatars
+- Shows per-card detection results with bounding boxes and confidence scores
+- Generates visual overlay with detection regions and search areas
+- Validates optimized detection parameters and success rates
+
+**API Endpoint**: `/api/test-contact-name-boundary-detector`
+
+**Expected Output**:
+```
+📝 Contact Name Boundary Detector (Section 5)
+• Cards processed: 9
+• Names detected: 9  
+• Success rate: 100.0%
+• Processing time: 245ms
+• Search region: Upper section RIGHT of avatars (CORRECTED - original was right!)
+• Technical details: White threshold: 155, Margins: 5/10px, Morphology: 3×2px kernel
+```
+
+**Detection Parameters**:
+- **Search Region**: Upper section to the right of detected avatars
+- **White Threshold**: 155 (optimized for light gray text detection)
+- **Size Constraints**: 20-180×10-30px (optimized for contact names)
+- **Morphological Operations**: 3×2px kernel with 2 iterations for text connectivity
+- **Confidence**: Minimum 12% white pixel ratio for valid detection
+
+### 6. API Connection Testing
 
 **Button**: 🌐 **Test DeepSeek API**
 
@@ -208,6 +239,31 @@ WECHAT_WINDOW = (new_x, new_y, new_width, new_height)
 # Use diagnostic tools for precise measurement
 # Visual verification shows exact offset needed
 ```
+
+#### Contact Name Detection Issues
+**Symptoms**: Low detection success rate, missing name boundaries
+**Diagnostic Steps**:
+1. Run Contact Name Boundary Detector test to check current performance
+2. Examine visual overlay for search region positioning
+3. Check white text threshold effectiveness on current interface
+4. Verify avatar detection accuracy (prerequisite for name detection)
+
+**Solutions**:
+```python
+# Adjust white threshold for different text brightness
+self.WHITE_THRESHOLD_MIN = 150  # Lower for darker text
+self.WHITE_THRESHOLD_MIN = 160  # Higher for brighter backgrounds
+
+# Modify search margins for different UI layouts
+self.SEARCH_MARGIN_LEFT = 8   # Increase gap from avatar
+self.SEARCH_MARGIN_RIGHT = 15 # Increase buffer from card edge
+
+# Tune morphological operations for text connectivity
+self.MORPH_KERNEL_SIZE = (4, 2)  # Wider kernel for longer names
+self.MORPH_ITERATIONS = 3        # More iterations for fragmented text
+```
+
+**Expected Performance**: 80-100% success rate on standard WeChat interface
 
 #### API Connection Problems
 **Symptoms**: DeepSeek API timeouts, authentication errors

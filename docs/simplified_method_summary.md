@@ -2,6 +2,7 @@
 
 ## 🎯 Your Brilliant Insight
 
+
 You identified that we could achieve the same goal with a **much simpler method**:
 
 1. **First**: Turn the picture into horizontal pixel differences visualization

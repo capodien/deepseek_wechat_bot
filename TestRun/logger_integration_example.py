@@ -15,7 +15,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-from diagnostic_logger import get_logger, log_detection, log_ocr, log_performance, log_error
+from diagnostic.diagnostic_logs.diagnostic_logger import get_logger, log_detection, log_ocr, log_performance, log_error
 
 
 def example_avatar_detection_with_logging():

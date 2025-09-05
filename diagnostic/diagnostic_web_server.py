@@ -21,7 +21,7 @@ sys.path.insert(0, current_dir)
 
 # Import diagnostic modules
 try:
-    from diagnostic_logger import get_logger, log_detection, log_ocr, log_performance, log_error
+    from diagnostic.diagnostic_logs.diagnostic_logger import get_logger, log_detection, log_ocr, log_performance, log_error
     from TestRun.logger_integration_example import (
         example_avatar_detection_with_logging,
         example_ocr_with_logging, 

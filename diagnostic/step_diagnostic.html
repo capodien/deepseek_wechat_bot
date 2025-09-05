@@ -870,6 +870,10 @@
                     Step 3.5: 🔲 Card Boundary Detection
                 </button>
                 
+                <button id="test-contact-name-boundary" class="test-button">
+                    Section 5: 📝 Contact Name Boundary Detector
+                </button>
+                
                 <button id="test-click" class="test-button" disabled style="background: #ccc;">
                     Step 4: 🖱️ Test Click at Coordinates
                 </button>
@@ -1822,6 +1826,108 @@ Accuracy: ${result.method_info.accuracy}`;
             
             button.disabled = false;
             button.innerHTML = 'Step 3.5: 🔲 Card Boundary Detection';
+        });
+
+        // Section 5: Contact Name Boundary Detector
+        document.getElementById('test-contact-name-boundary').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Testing Contact Names...';
+            
+            updateStatus('step2', 'running', 'Testing Contact Name Boundary Detector...');
+            
+            try {
+                const response = await fetch('/api/test-contact-name-boundary-detector', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('✅ Contact Name Boundary Detector test completed!', 'success');
+                    updateStatus('step2', 'success', 'Success');
+                    
+                    // Create visual output
+                    let resultHtml = `<span class="success-message">📝 Contact Name Boundary Detector (Section 5)</span><br>`;
+                    
+                    // Detection Results
+                    const results = data.detection_results;
+                    resultHtml += `<div class="stats-grid">`;
+                    resultHtml += `<div class="stat-item"><strong>📊 Cards Processed:</strong> ${results.cards_processed}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>📝 Names Detected:</strong> ${results.names_detected}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>📈 Success Rate:</strong> ${results.success_rate}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>🔧 Method:</strong> ${results.detection_method}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>⏱️ Processing:</strong> ${data.processing_time}ms</div>`;
+                    resultHtml += `</div><br>`;
+                    
+                    // Technical Details
+                    const tech = data.technical_details;
+                    resultHtml += `<strong>🔧 Technical Configuration:</strong><br>`;
+                    resultHtml += `<div class="tech-details">`;
+                    resultHtml += `<div><strong>Search Region:</strong> ${tech.search_region}</div>`;
+                    resultHtml += `<div><strong>Margins:</strong> ${tech.margins}</div>`;
+                    resultHtml += `<div><strong>White Threshold:</strong> ${tech.white_threshold}</div>`;
+                    resultHtml += `<div><strong>Size Constraints:</strong> ${tech.size_constraints}</div>`;
+                    resultHtml += `<div><strong>Morphology:</strong> ${tech.morphology}</div>`;
+                    resultHtml += `<div><strong>Major Fix:</strong> ${tech.major_fix}</div>`;
+                    resultHtml += `</div><br>`;
+                    
+                    // Summary Status
+                    const summary = data.summary;
+                    resultHtml += `<div class="summary-status">`;
+                    resultHtml += `<strong>Status:</strong> ${summary.status}<br>`;
+                    resultHtml += `<strong>Result:</strong> ${summary.message}<br>`;
+                    resultHtml += `<strong>Recommendation:</strong> ${summary.recommendation}`;
+                    resultHtml += `</div><br>`;
+                    
+                    // Card Details
+                    if (data.card_details && data.card_details.length > 0) {
+                        resultHtml += `<strong>📋 Per-Card Analysis:</strong><br>`;
+                        resultHtml += '<div class="card-grid">';
+                        data.card_details.forEach(card => {
+                            const statusIcon = card.name_detected ? '✅' : '❌';
+                            resultHtml += `
+                                <div class="card-item">
+                                    <strong>${statusIcon} Card ${card.card_id}</strong><br>
+                                    ${card.name_detected ? 
+                                        `Name: ${card.bbox}<br>Confidence: ${card.confidence}<br>Method: ${card.method}` :
+                                        `Reason: ${card.reason}`
+                                    }
+                                </div>
+                            `;
+                        });
+                        resultHtml += '</div>';
+                    }
+                    
+                    // Visualization
+                    if (data.visualization) {
+                        resultHtml += `<br><strong>🎨 Visualization:</strong><br>`;
+                        resultHtml += `<div class="image-container">`;
+                        resultHtml += `<img src="/pic/screenshots/${data.visualization.filename}" class="visualization-image" alt="Contact Name Detection">`;
+                        resultHtml += `<br><em>${data.visualization.description}</em>`;
+                        resultHtml += `<a href="/pic/screenshots/${data.visualization.filename}" target="_blank" class="download-link">📥 View Full Size</a>`;
+                        resultHtml += `</div>`;
+                    }
+                    
+                    document.getElementById('step2-result').innerHTML = resultHtml;
+                    
+                    log(`📝 Section 5 Test: ${results.names_detected}/${results.cards_processed} names detected (${results.success_rate})`, 'info');
+                    
+                } else {
+                    log(`❌ Contact Name Boundary Detector test failed: ${data.error}`, 'error');
+                    updateStatus('step2', 'error', data.error);
+                    document.getElementById('step2-result').innerHTML = `<span class="error-message">Error: ${data.error}</span>`;
+                }
+                
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+                updateStatus('step2', 'error', error.message);
+                document.getElementById('step2-result').innerHTML = `<span class="error-message">API Error: ${error.message}</span>`;
+            }
+            
+            button.disabled = false;
+            button.innerHTML = 'Section 5: 📝 Contact Name Boundary Detector';
         });
 
         // Step 2d: Click Test

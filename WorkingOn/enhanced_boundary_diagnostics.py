@@ -156,7 +156,7 @@ def validate_against_visual_analysis():
     
     # Run the original strong edge analysis for comparison
     try:
-        from strong_edge_analysis_report import create_comprehensive_analysis
+        from WorkingOn.strong_edge_analysis_report import create_comprehensive_analysis
         original_result = create_comprehensive_analysis()
         
         # Run enhanced detection

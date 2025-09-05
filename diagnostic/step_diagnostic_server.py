@@ -7,6 +7,11 @@ Provides testing interface and visual verification for WeChat bot modules
 
 import os
 import sys
+
+# Fix matplotlib backend for Flask/threading compatibility on macOS
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend to prevent threading issues
+
 import time
 import json
 import numpy as np
@@ -23,8 +28,7 @@ sys.path.insert(0, current_dir)
 try:
     from modules.m_ScreenShot_WeChatWindow import WeChatScreenshotCapture
     from WorkingOn.m_OCRZone_MessageCards import OCRZoneMessageCards
-    from modules.Card_Width_Detector import SimpleWidthDetector
-    from modules.card_boundary_detector import CardBoundaryDetector
+    from modules.m_Card_Processing import SimpleWidthDetector, CardBoundaryDetector
     from TestRun.opencv_adaptive_detector import OpenCVAdaptiveDetector
     print("✅ Successfully imported basic modules")
     
@@ -2605,6 +2609,240 @@ def test_card_boundaries():
         
     except Exception as e:
         print(f"❌ Card boundary detection error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'processing_time': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
+        })
+
+
+@app.route('/api/test-contact-name-boundary-detector', methods=['POST'])
+def test_contact_name_boundary_detector():
+    """Test Section 5: Contact Name Boundary Detector with visual diagnostic overlay"""
+    try:
+        print("🎯 Testing Contact Name Boundary Detector (Section 5)...")
+        start_time = time.time()
+        
+        # Import the Contact Name Boundary Detector from the Card Processing module
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+        from modules.m_Card_Processing import ContactNameBoundaryDetector
+        
+        # Get latest screenshot
+        screenshot_dir = "pic/screenshots"
+        if not os.path.exists(screenshot_dir):
+            return jsonify({
+                'success': False,
+                'error': 'Screenshot directory not found',
+                'processing_time': 0
+            })
+        
+        # Find the most recent WeChat screenshot (not processed ones)
+        screenshot_files = []
+        for file in os.listdir(screenshot_dir):
+            if file.endswith('.png') and not any(keyword in file.lower() for keyword in ['enhanced', 'boundary', 'avatar', 'contact', 'photoshop', 'horizontal']):
+                filepath = os.path.join(screenshot_dir, file)
+                screenshot_files.append((filepath, os.path.getmtime(filepath)))
+        
+        if not screenshot_files:
+            return jsonify({
+                'success': False,
+                'error': 'No suitable WeChat screenshots found in pic/screenshots',
+                'processing_time': 0
+            })
+        
+        # Get most recent screenshot
+        latest_screenshot = max(screenshot_files, key=lambda x: x[1])[0]
+        print(f"  📸 Using screenshot: {os.path.basename(latest_screenshot)}")
+        
+        # Create detector instance in debug mode
+        detector = ContactNameBoundaryDetector(debug_mode=True)
+        
+        # Run detection with debug mode enabled
+        enhanced_cards, detection_info = detector.detect_name_boundaries(latest_screenshot, debug_mode=True)
+        
+        # Calculate processing time
+        processing_time = int((time.time() - start_time) * 1000)
+        
+        # Create comprehensive debug visualization
+        try:
+            visualization_path = detector.create_comprehensive_debug_visualization(enhanced_cards, detection_info)
+            visualization_type = "comprehensive_debug"
+        except Exception as e:
+            print(f"⚠️ Comprehensive debug visualization failed, fallback to simple: {e}")
+            # Fallback to simple visualization
+            visualization_path = detector.create_name_boundary_visualization(latest_screenshot)
+            visualization_type = "simple_fallback"
+        
+        # Prepare response data
+        response_data = {
+            'success': True,
+            'processing_time': processing_time,
+            'screenshot_used': os.path.basename(latest_screenshot),
+            'detection_results': {
+                'cards_processed': detection_info.get('total_cards_processed', 0),
+                'names_detected': detection_info.get('names_detected', 0),
+                'success_rate': f"{detection_info.get('detection_success_rate', 0):.1%}",
+                'detection_method': detection_info.get('detection_method', 'unknown')
+            },
+            'technical_details': {
+                'white_threshold': 155,
+                'search_region': 'Upper section RIGHT of avatars (CORRECTED - original was right!)',
+                'margins': 'Top: 12px, Left/Right: 5/10px (CORRECTED for right-side)',
+                'pixel_ratio_min': 0.12,
+                'size_constraints': '20-180×10-30px (OPTIMIZED for contact names)',
+                'morphology': 'Kernel: 3×2px, Iterations: 2 (ENHANCED connectivity)',
+                'major_fix': 'Corrected search region + optimized parameters for better detection'
+            },
+            'card_details': []
+        }
+        
+        # Add detailed card analysis
+        for i, card in enumerate(enhanced_cards, 1):
+            if card.get('name_boundary'):
+                nb = card['name_boundary']
+                bbox = nb['bbox']
+                confidence = nb.get('confidence', 0)
+                method = nb.get('detection_method', 'unknown')
+                
+                response_data['card_details'].append({
+                    'card_id': i,
+                    'name_detected': True,
+                    'bbox': f"{bbox[2]}×{bbox[3]}px at ({bbox[0]}, {bbox[1]})",
+                    'confidence': f"{confidence:.2f}",
+                    'method': method
+                })
+            else:
+                response_data['card_details'].append({
+                    'card_id': i,
+                    'name_detected': False,
+                    'reason': 'No suitable white text regions found'
+                })
+        
+        # Add visualization info
+        if visualization_path:
+            response_data['visualization'] = {
+                'filename': os.path.basename(visualization_path),
+                'path': visualization_path,
+                'description': 'Orange rectangles show detected name boundaries, gray areas show search regions'
+            }
+        
+        # Generate summary message
+        names_found = detection_info.get('names_detected', 0)
+        total_cards = detection_info.get('total_cards_processed', 0)
+        success_rate = detection_info.get('detection_success_rate', 0) * 100
+        
+        response_data['summary'] = {
+            'status': '✅ EXCELLENT' if success_rate > 80 else '⚠️ NEEDS IMPROVEMENT' if success_rate > 50 else '❌ POOR PERFORMANCE',
+            'message': f"Detected {names_found}/{total_cards} contact names ({success_rate:.1f}% success rate)",
+            'recommendation': 'Search region positioning appears optimal' if success_rate > 80 else 'Consider adjusting search region or detection parameters'
+        }
+        
+        print(f"✅ Contact Name Boundary Detector test completed in {processing_time}ms")
+        print(f"   Success Rate: {success_rate:.1f}% ({names_found}/{total_cards} cards)")
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"❌ Contact Name Boundary Detector test error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'processing_time': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
+        })
+
+
+@app.route('/api/test-contact-name-comprehensive-debug', methods=['POST'])
+def test_contact_name_comprehensive_debug():
+    """Test Section 5: Contact Name Boundary Detector with comprehensive debug visualization (matching time detection quality)"""
+    try:
+        print("🎯 Testing Contact Name Boundary Detector - Comprehensive Debug Mode...")
+        start_time = time.time()
+        
+        # Import required modules
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+        from modules.m_Card_Processing import ContactNameBoundaryDetector
+        
+        # Get latest screenshot
+        screenshot_dir = "pic/screenshots"
+        if not os.path.exists(screenshot_dir):
+            return jsonify({
+                'success': False,
+                'error': 'Screenshot directory not found',
+                'processing_time': 0
+            })
+        
+        # Find the most recent WeChat screenshot (not processed ones)
+        screenshot_files = []
+        for file in os.listdir(screenshot_dir):
+            if file.endswith('.png') and not any(keyword in file.lower() for keyword in ['enhanced', 'boundary', 'avatar', 'contact', 'debug', 'comprehensive']):
+                filepath = os.path.join(screenshot_dir, file)
+                screenshot_files.append((filepath, os.path.getmtime(filepath)))
+        
+        if not screenshot_files:
+            return jsonify({
+                'success': False,
+                'error': 'No suitable WeChat screenshots found in pic/screenshots',
+                'processing_time': 0
+            })
+        
+        # Get most recent screenshot
+        latest_screenshot = max(screenshot_files, key=lambda x: x[1])[0]
+        print(f"  📸 Using screenshot: {os.path.basename(latest_screenshot)}")
+        
+        # Create detector instance
+        detector = ContactNameBoundaryDetector(debug_mode=True)
+        
+        # Run detection with debug mode enabled
+        enhanced_cards, detection_info = detector.detect_name_boundaries(latest_screenshot, debug_mode=True)
+        
+        # Create comprehensive debug visualization
+        visualization_path = detector.create_comprehensive_debug_visualization(enhanced_cards, detection_info)
+        
+        # Calculate processing time
+        processing_time = int((time.time() - start_time) * 1000)
+        
+        # Extract visualization filename
+        visualization_filename = os.path.basename(visualization_path) if visualization_path else None
+        
+        # Prepare comprehensive debug response
+        response_data = {
+            'success': True,
+            'processing_time': processing_time,
+            'screenshot_used': os.path.basename(latest_screenshot),
+            'visualization': {
+                'filename': visualization_filename,
+                'path': visualization_path,
+                'type': 'comprehensive_debug',
+                'description': 'Multi-panel debug visualization matching time detection quality'
+            },
+            'detection_results': {
+                'cards_processed': detection_info.get('total_cards_processed', 0),
+                'names_detected': detection_info.get('names_detected', 0),
+                'success_rate': f"{detection_info.get('detection_success_rate', 0):.1%}",
+                'detection_method': detection_info.get('detection_method', 'unknown')
+            },
+            'debug_features': {
+                'main_overview': 'WeChat screenshot with success/failure annotations',
+                'roi_analysis': 'Individual card search regions and processing steps',
+                'binary_processing': 'White text detection and morphological operations',
+                'statistical_analysis': 'Confidence scores, processing times, algorithm parameters'
+            },
+            'message': f"🎨 Comprehensive debug visualization created successfully! Generated multi-panel diagnostic output similar to time detection system."
+        }
+        
+        print(f"✅ Contact Name Comprehensive Debug completed in {processing_time}ms")
+        print(f"   Debug visualization: {visualization_filename}")
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"❌ Contact Name Comprehensive Debug error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({

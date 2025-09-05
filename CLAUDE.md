@@ -103,7 +103,8 @@ deepseek_wechat_bot/
 │   ├── m_Card_Processing.py     # Main orchestrator (detector classes)
 │   ├── m_ScreenShot_WeChatWindow.py # Screenshot capture
 │   ├── screenshot_processor.py  # Screenshot I/O operations
-│   ├── visualization_engine.py  # Centralized visualization utilities
+│   ├── visualization_engine.py  # Centralized visualization engine (NEW)
+│   ├── diagnostic_templates.py  # Standardized visualization templates (NEW)
 │   └── image_utils.py           # Shared image processing functions
 │
 ├── docs/                     # Documentation
@@ -271,6 +272,59 @@ screenshot_path, analysis = screenshot_processor.capture_and_process_screenshot(
 2. Move temporary files to `TestRun/` directory
 3. Verify end-to-end diagnostic functionality
 4. Update relevant documentation files
+
+### 5.1 Card Processing Module Filename Conventions
+
+The Card Processing module (`modules/m_Card_Processing.py`) generates debug visualization files that follow a strict naming convention for easy identification and organization.
+
+**Naming Pattern**: `{timestamp}_{section#}_{description}.png`
+
+**Section Mapping**:
+- **Section 1**: `01_` - SimpleWidthDetector (Width Detection)
+- **Section 2**: `02_` - RightBoundaryDetector (High-Contrast Preprocessing) 
+- **Section 3**: `03_` - CardAvatarDetector (Avatar Detection)
+- **Section 4**: `04_` - CardBoundaryDetector (Card Boundaries)
+- **Section 5**: `05_` - ContactNameBoundaryDetector (Contact Names)
+  - **Simple**: `05_ContactName_Boundaries_Xnames_Ycards.png` - Basic overlay visualization
+  - **Comprehensive**: `05_Debug_ContactNameDetection_Xsuccess_Yfailed.png` - Multi-panel debug output (NEW)
+- **Section 6**: `06_` - TimeBoxDetector (Time Boxes)
+  - **Comprehensive**: `06_Debug_TimeDetection_Xsuccess_Yfailed.png` - Multi-panel debug output
+
+**File Examples**:
+```
+20250905_203603_01_EnhancedDualBoundary_365px.png
+20250905_203603_01_SimpleWidth_365px.png
+20250905_203603_02_photoshop_levels_gamma.png
+20250905_203603_03_advanced_avatar_detection.png
+20250905_203603_04_Enhanced_Card_Avatar_Boundaries_9cards.png
+20250905_203603_05_ContactName_Boundaries_2names_9cards.png        # Simple overlay
+20250905_203603_05_Debug_ContactNameDetection_2success_7failed.png # Comprehensive debug (NEW)
+20250905_203603_06_Complete_Analysis_7times_9cards.png
+20250905_203603_06_Debug_TimeDetection_7success_2failed.png        # Comprehensive debug
+```
+
+### 5.2 Comprehensive Debug Visualization System (NEW)
+
+**Enhanced Visual Debugging**: Section 5 (Contact Name Detection) now includes comprehensive debug visualization matching the quality of time detection diagnostic output.
+
+**Features**:
+- **Multi-Panel Layout**: Main overview + individual ROI analysis + binary processing + statistical charts
+- **Success/Failure Indicators**: Color-coded annotations showing detection results per card
+- **Processing Pipeline**: Visual representation of white text detection, morphological operations, and filtering steps
+- **Algorithm Parameters**: Real-time display of thresholds, size constraints, and confidence scores
+- **ROI Analysis**: Detailed view of search regions, binary masks, and contour detection per card
+
+**API Endpoints**:
+- **Standard**: `/api/test-contact-name-boundary-detector` - Enhanced to use comprehensive debug by default
+- **Dedicated**: `/api/test-contact-name-comprehensive-debug` - Comprehensive debug visualization only
+
+**Generated Files**: `YYYYMMDD_HHMMSS_05_Debug_ContactNameDetection_Xsuccess_Yfailed.png`
+
+**Implementation Notes**:
+- All visualization methods use consistent `{timestamp}_0{section}_` prefix
+- Debug files are saved to `pic/screenshots/` directory
+- Timestamp format: `YYYYMMDD_HHMMSS`
+- Additional metadata (dimensions, counts) included in filename for quick reference
 
 ## 6. Critical System Limitations
 
