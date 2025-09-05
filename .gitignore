@@ -172,7 +172,12 @@ cython_debug/
 /.idea/.gitignore
 /pic/chatname/cropped_wechat_20250223_041932.png
 /.idea/deepseek_wechat_bot.iml
-/pic/*
+# Allow pic directory structure but ignore large files
+pic/**/*.png
+pic/**/*.jpg
+pic/**/*.jpeg
+pic/.DS_Store
+# Keep directory structure and small files
 /.idea/modules.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/inspectionProfiles/Project_Default.xml
