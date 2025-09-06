@@ -31,7 +31,7 @@ sys.path.insert(0, current_dir)
 
 # Import our new modules
 try:
-    from modules.m_ScreenShot_WeChatWindow import ccWeChatScreenshotCapture
+    from modules.screenshot_processor import cWeChatScreenshotCapture
     from WorkingOn.m_OCRZone_MessageCards import OCRZoneMessageCards
     from modules.m_Card_Processing import cBoundaryCoordinator, cCardBoundaryDetector
     from TestRun.opencv_adaptive_detector import OpenCVAdaptiveDetector
@@ -175,7 +175,7 @@ def test_screenshot():
             'detection_time': detection_time,
             'method_info': {
                 'method_name': 'cWeChatScreenshotCapture',
-                'module_path': 'modules/m_ScreenShot_WeChatWindow.py',
+                'module_path': 'modules/screenshot_processor.py',
                 'technique': 'Cross-platform GUI automation with window detection',
                 'parameters': 'pyautogui + platform detection (macOS/Windows)',
                 'accuracy': 'Window-dependent (requires WeChat visible)'
@@ -196,20 +196,20 @@ def test_screenshot():
 
 @app.route('/api/test-module-capture-messages', methods=['POST'])
 def test_module_capture_messages():
-    """Test m_ScreenShot_WeChatWindow: capture_messages_screenshot() function"""
+    """Test screenshot_processor: fcapture_messages_screenshot() function"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import capture_messages_screenshot
+        from modules.screenshot_processor import fcapture_messages_screenshot
         
         print("🔍 Testing capture_messages_screenshot() function...")
         start_time = time.time()
         
         # Test with default parameters
         print("  📸 Testing with default parameters...")
-        result1 = capture_messages_screenshot()
+        result1 = fcapture_messages_screenshot()
         
         # Test with custom parameters  
         print("  ⚙️ Testing with custom save directory...")
-        result2 = capture_messages_screenshot(
+        result2 = fcapture_messages_screenshot(
             save_dir="pic/screenshots",
             region=None,
             use_dynamic_detection=True
@@ -250,21 +250,21 @@ def test_module_capture_messages():
 
 @app.route('/api/test-module-capture-screenshot', methods=['POST'])
 def test_module_fcapture_screenshot():
-    """Test m_ScreenShot_WeChatWindow: fcapture_screenshot() function"""
+    """Test screenshot_processor: fcapture_screenshot() function"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import ffcapture_screenshot
+        from modules.screenshot_processor import fcapture_screenshot
         
         print("🔍 Testing ffcapture_screenshot() function...")
         start_time = time.time()
         
         # Test with default parameters
         print("  📸 Testing with default parameters...")
-        result1 = ffcapture_screenshot()
+        result1 = fcapture_screenshot()
         
         # Test with custom parameters
         print("  ⚙️ Testing with custom filename...")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result2 = ffcapture_screenshot(
+        result2 = fcapture_screenshot(
             output_dir="pic/screenshots",
             filename=f"{timestamp}_WeChat_API_Test.png",
             detect_window=True
@@ -274,7 +274,7 @@ def test_module_fcapture_screenshot():
         
         return jsonify({
             'success': True,
-            'function_name': 'ffcapture_screenshot',
+            'function_name': 'fcapture_screenshot',
             'test_results': {
                 'default_params': {
                     'result': result1,
@@ -297,16 +297,16 @@ def test_module_fcapture_screenshot():
     except Exception as e:
         return jsonify({
             'success': False,
-            'function_name': 'ffcapture_screenshot',
+            'function_name': 'fcapture_screenshot',
             'error': str(e),
             'duration_ms': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
         })
 
 @app.route('/api/test-module-class-direct', methods=['POST'])
 def test_module_class_direct():
-    """Test m_ScreenShot_WeChatWindow: cWeChatScreenshotCapture class directly"""
+    """Test screenshot_processor: cWeChatScreenshotCapture class directly"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import ccWeChatScreenshotCapture
+        from modules.screenshot_processor import cWeChatScreenshotCapture
         
         print("🔍 Testing cWeChatScreenshotCapture class directly...")
         start_time = time.time()
@@ -354,10 +354,10 @@ def test_module_class_direct():
 
 @app.route('/api/test-module-all-functions', methods=['POST'])
 def test_module_all_functions():
-    """Comprehensive test of all m_ScreenShot_WeChatWindow module functions"""
+    """Comprehensive test of all screenshot_processor module functions"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import (
-            capture_messages_screenshot, 
+        from modules.screenshot_processor import (
+            fcapture_messages_screenshot, 
             fcapture_screenshot, 
             cWeChatScreenshotCapture
         )
@@ -369,7 +369,7 @@ def test_module_all_functions():
         # Test 1: capture_messages_screenshot
         print("  1️⃣ Testing capture_messages_screenshot()...")
         try:
-            result1 = capture_messages_screenshot()
+            result1 = fcapture_messages_screenshot()
             results['tests'].append({
                 'function': 'capture_messages_screenshot',
                 'success': bool(result1),

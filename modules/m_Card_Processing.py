@@ -128,34 +128,21 @@ matplotlib.use('Agg')  # Use non-GUI backend to prevent threading issues
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime
 
-# Import new modular components
+# Import consolidated modular components
 try:
     from . import screenshot_processor
     from . import visualization_engine
     from . import image_utils
-    MODULAR_IMPORTS_AVAILABLE = True
+    SCREENSHOT_AVAILABLE = True
 except ImportError:
     # Fallback imports for direct execution
     try:
         import screenshot_processor
         import visualization_engine
         import image_utils
-        MODULAR_IMPORTS_AVAILABLE = True
-    except ImportError:
-        print("⚠️  Modular components not available. Using legacy inline functions.")
-        MODULAR_IMPORTS_AVAILABLE = False
-
-# Import screenshot capture functionality (legacy support)
-try:
-    from .m_ScreenShot_WeChatWindow import fcapture_screenshot
-    SCREENSHOT_AVAILABLE = True
-except ImportError:
-    # Fallback import for direct execution
-    try:
-        from m_ScreenShot_WeChatWindow import fcapture_screenshot
         SCREENSHOT_AVAILABLE = True
     except ImportError:
-        print("⚠️  Screenshot module not available. Live capture disabled.")
+        print("⚠️  Modular components not available. Screenshot capture disabled.")
         SCREENSHOT_AVAILABLE = False
 
 
@@ -812,7 +799,7 @@ class cLeftBoundaryDetector:
             print(f"📐 Image dimensions: {img_width}×{img_height}")
             
             # Use modular image utils if available, otherwise fallback
-            if MODULAR_IMPORTS_AVAILABLE:
+            if SCREENSHOT_AVAILABLE:
                 x_pos, confidence, profile = image_utils.ffind_vertical_edge_x(
                     img, x0=0, x1=int(img_width * self.CONVERSATION_WIDTH_RATIO), rightmost=False
                 )
@@ -912,7 +899,7 @@ class cLeftBoundaryDetector:
 
 
 # Legacy compatibility - keep find_vertical_edge_x function for backward compatibility
-if MODULAR_IMPORTS_AVAILABLE:
+if SCREENSHOT_AVAILABLE:
     find_vertical_edge_x = image_utils.ffind_vertical_edge_x
 else:
     def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
@@ -4835,8 +4822,8 @@ def fcomplete_card_analysis(image_path: str, debug_mode: bool = True) -> Optiona
 # ENHANCED API FUNCTIONS FOR LIVE PROCESSING
 # =============================================================================
 
-# Import screenshot processing functions from screenshot_processor module
-if MODULAR_IMPORTS_AVAILABLE:
+# Import screenshot processing functions from consolidated screenshot_processor module
+if SCREENSHOT_AVAILABLE:
     capture_and_process_screenshot = screenshot_processor.fcapture_and_process_screenshot
     process_screenshot_file = screenshot_processor.fprocess_screenshot_file
     process_current_wechat_window = screenshot_processor.fprocess_current_wechat_window
@@ -4870,7 +4857,7 @@ else:
             
             # Step 1: Capture fresh screenshot
             print("\n📸 Phase 1: Capturing WeChat screenshot...")
-            screenshot_path = fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
+            screenshot_path = screenshot_processor.fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
             
             if not screenshot_path:
                 print("❌ Failed to capture screenshot")

@@ -7,14 +7,30 @@ This package contains isolated, modular components for the WeChat bot system.
 Each module is designed to be self-contained and testable.
 
 Modules:
-- m_ScreenShot_WeChatWindow: Screenshot capture functionality for WeChat windows
+- screenshot_processor: Consolidated screenshot capture and processing functionality
+- m_Card_Processing: WeChat message card detection and analysis
+- visualization_engine: Centralized visualization utilities
+- image_utils: Shared image processing functions
 """
 
-from .m_ScreenShot_WeChatWindow import cWeChatScreenshotCapture, fcapture_screenshot
+from .screenshot_processor import (
+    cWeChatScreenshotCapture, 
+    fcapture_screenshot,
+    fcapture_messages_screenshot,
+    fcapture_and_process_screenshot,
+    fprocess_screenshot_file,
+    fprocess_current_wechat_window,
+    fget_live_card_analysis
+)
 
 __all__ = [
     'cWeChatScreenshotCapture',
-    'fcapture_screenshot'
+    'fcapture_screenshot', 
+    'fcapture_messages_screenshot',
+    'fcapture_and_process_screenshot',
+    'fprocess_screenshot_file',
+    'fprocess_current_wechat_window',
+    'fget_live_card_analysis'
 ]
 
 __version__ = "1.0.0"
