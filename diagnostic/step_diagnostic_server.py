@@ -9,8 +9,13 @@ import os
 import sys
 
 # Fix matplotlib backend for Flask/threading compatibility on macOS
-import matplotlib
-matplotlib.use('Agg')  # Use non-GUI backend to prevent threading issues
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-GUI backend to prevent threading issues
+    print("✅ Matplotlib available")
+except ImportError:
+    print("⚠️ Matplotlib not available - some features may be limited")
+    matplotlib = None
 
 import time
 import json
@@ -30,6 +35,7 @@ try:
     from WorkingOn.m_OCRZone_MessageCards import OCRZoneMessageCards
     from modules.m_Card_Processing import SimpleWidthDetector, CardBoundaryDetector
     from TestRun.opencv_adaptive_detector import OpenCVAdaptiveDetector
+    from modules.timestamp_detector import TimestampDetector
     print("✅ Successfully imported basic modules")
     
     # Try to import optional modules
@@ -2843,6 +2849,120 @@ def test_contact_name_comprehensive_debug():
         
     except Exception as e:
         print(f"❌ Contact Name Comprehensive Debug error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'processing_time': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
+        })
+
+
+@app.route('/api/test-timestamp-detection', methods=['POST'])
+def test_timestamp_detection():
+    """Test timestamp boundary detection with visual debugging"""
+    try:
+        print("🔍 Testing timestamp boundary detection...")
+        start_time = time.time()
+        
+        # Get image path from request or use default test image
+        data = request.get_json() or {}
+        image_path = data.get('image_path')
+        
+        # If no image specified, try to use a recent screenshot or test image
+        if not image_path:
+            # Try to find the test image first
+            test_image = "/Users/erli/coding/deepseek_wechat_bot/WorkingOn/Attempt_Card_NameBoundryDetection_Photo.png"
+            if os.path.exists(test_image):
+                image_path = test_image
+            else:
+                # Try to find a recent screenshot
+                screenshots_dir = "/Users/erli/coding/deepseek_wechat_bot/pic/screenshots"
+                if os.path.exists(screenshots_dir):
+                    screenshots = [f for f in os.listdir(screenshots_dir) if f.endswith('.png')]
+                    if screenshots:
+                        # Get most recent screenshot
+                        screenshots.sort(reverse=True)
+                        image_path = os.path.join(screenshots_dir, screenshots[0])
+                
+                if not image_path:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No image available for testing. Please capture a screenshot first.',
+                        'processing_time': int((time.time() - start_time) * 1000)
+                    })
+        
+        if not os.path.exists(image_path):
+            return jsonify({
+                'success': False,
+                'error': f'Image file not found: {image_path}',
+                'processing_time': int((time.time() - start_time) * 1000)
+            })
+        
+        # Initialize timestamp detector
+        print("  🎯 Initializing timestamp detector...")
+        detector = TimestampDetector()
+        
+        # Perform timestamp boundary detection with debug visualization
+        print("  📍 Detecting timestamp boundary...")
+        result = detector.detect_timestamp_boundary(image_path, save_debug=True)
+        
+        processing_time = int((time.time() - start_time) * 1000)
+        
+        # Prepare response data
+        response_data = {
+            'success': result['boundary_x'] is not None,
+            'boundary_x': result['boundary_x'],
+            'confidence': result['confidence'],
+            'method_used': result['method_used'],
+            'processing_time': processing_time,
+            'original_processing_time': result.get('processing_time_ms', 0),
+            'image_path': image_path
+        }
+        
+        # Add debug image if available
+        if 'debug_image_path' in result:
+            debug_filename = os.path.basename(result['debug_image_path'])
+            response_data['debug_image'] = debug_filename
+            response_data['debug_image_path'] = result['debug_image_path']
+        
+        # Add detailed debug info
+        if 'debug_info' in result:
+            debug_info = result['debug_info']
+            response_data['debug_details'] = {
+                'gradient_method': debug_info.get('gradient_result', {}),
+                'edge_method': debug_info.get('edge_result', {}),
+                'method_agreement': debug_info.get('agreement', False),
+                'fallback_reason': debug_info.get('fallback_reason', None)
+            }
+        
+        # Add analysis summary
+        if result['boundary_x'] is not None:
+            response_data['analysis'] = {
+                'boundary_position': f"x = {result['boundary_x']} pixels",
+                'detection_quality': result['confidence'],
+                'recommended_usage': "Use this boundary for timestamp positioning" if result['confidence'] in ['high', 'medium'] else "Manual verification recommended"
+            }
+            
+            response_data['message'] = f"🎯 Timestamp boundary detected at x={result['boundary_x']} with {result['confidence']} confidence using {result['method_used']} method"
+        else:
+            error_msg = result.get('error', 'Unknown detection failure')
+            response_data['message'] = f"❌ Timestamp boundary detection failed: {error_msg}"
+            response_data['analysis'] = {
+                'failure_reason': error_msg,
+                'suggested_action': "Try adjusting image or detection parameters"
+            }
+        
+        print(f"✅ Timestamp detection completed in {processing_time}ms")
+        if result['boundary_x']:
+            print(f"   Boundary: x = {result['boundary_x']}")
+            print(f"   Confidence: {result['confidence']}")
+            print(f"   Method: {result['method_used']}")
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"❌ Timestamp detection error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({

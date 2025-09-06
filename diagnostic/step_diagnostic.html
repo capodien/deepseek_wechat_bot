@@ -874,6 +874,10 @@
                     Section 5: 📝 Contact Name Boundary Detector
                 </button>
                 
+                <button id="test-timestamp-detection" class="test-button">
+                    ⏰ Timestamp Boundary Detection
+                </button>
+                
                 <button id="test-click" class="test-button" disabled style="background: #ccc;">
                     Step 4: 🖱️ Test Click at Coordinates
                 </button>
@@ -1928,6 +1932,107 @@ Accuracy: ${result.method_info.accuracy}`;
             
             button.disabled = false;
             button.innerHTML = 'Section 5: 📝 Contact Name Boundary Detector';
+        });
+
+        // Timestamp Boundary Detection
+        document.getElementById('test-timestamp-detection').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Detecting Timestamp...';
+            
+            updateStatus('step2', 'running', 'Testing Timestamp Boundary Detection...');
+            
+            try {
+                const response = await fetch('/api/test-timestamp-detection', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('✅ Timestamp boundary detection completed!', 'success');
+                    updateStatus('step2', 'success', 'Success');
+                    
+                    // Create visual output
+                    let resultHtml = `<span class="success-message">⏰ Timestamp Boundary Detection</span><br>`;
+                    
+                    // Detection Results
+                    resultHtml += `<div class="stats-grid">`;
+                    resultHtml += `<div class="stat-item"><strong>📍 Boundary X:</strong> ${data.boundary_x} pixels</div>`;
+                    resultHtml += `<div class="stat-item"><strong>🎯 Confidence:</strong> ${data.confidence.toUpperCase()}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>🔧 Method:</strong> ${data.method_used}</div>`;
+                    resultHtml += `<div class="stat-item"><strong>⏱️ Processing:</strong> ${data.processing_time}ms</div>`;
+                    resultHtml += `<div class="stat-item"><strong>📸 Source:</strong> ${data.image_path.split('/').pop()}</div>`;
+                    resultHtml += `</div><br>`;
+                    
+                    // Analysis Summary
+                    if (data.analysis) {
+                        resultHtml += `<strong>📊 Analysis Summary:</strong><br>`;
+                        resultHtml += `<div class="analysis-details">`;
+                        resultHtml += `<div><strong>Position:</strong> ${data.analysis.boundary_position}</div>`;
+                        resultHtml += `<div><strong>Quality:</strong> ${data.analysis.detection_quality}</div>`;
+                        resultHtml += `<div><strong>Recommendation:</strong> ${data.analysis.recommended_usage}</div>`;
+                        resultHtml += `</div><br>`;
+                    }
+                    
+                    // Technical Details
+                    if (data.debug_details) {
+                        resultHtml += `<strong>🔧 Technical Details:</strong><br>`;
+                        resultHtml += `<div class="tech-details">`;
+                        
+                        const gradientInfo = data.debug_details.gradient_method;
+                        if (gradientInfo && gradientInfo.boundary_x) {
+                            resultHtml += `<div><strong>Gradient Method:</strong> x=${gradientInfo.boundary_x} (${gradientInfo.candidates_count} candidates, std=${gradientInfo.std_dev?.toFixed(1) || 'N/A'})</div>`;
+                        }
+                        
+                        const edgeInfo = data.debug_details.edge_method;
+                        if (edgeInfo && edgeInfo.boundary_x) {
+                            resultHtml += `<div><strong>Edge Method:</strong> x=${edgeInfo.boundary_x}</div>`;
+                        }
+                        
+                        if (data.debug_details.method_agreement) {
+                            resultHtml += `<div><strong>Methods Agreement:</strong> Yes</div>`;
+                        } else if (data.debug_details.fallback_reason) {
+                            resultHtml += `<div><strong>Fallback Reason:</strong> ${data.debug_details.fallback_reason}</div>`;
+                        }
+                        
+                        resultHtml += `</div><br>`;
+                    }
+                    
+                    // Visualization
+                    if (data.debug_image) {
+                        resultHtml += `<strong>🎨 Debug Visualization:</strong><br>`;
+                        resultHtml += `<div class="image-container">`;
+                        resultHtml += `<img src="/pic/screenshots/${data.debug_image}" class="visualization-image" alt="Timestamp Boundary Detection">`;
+                        resultHtml += `<br><em>Green line shows detected timestamp left boundary at x=${data.boundary_x}. Yellow rectangle shows search region.</em>`;
+                        resultHtml += `<a href="/pic/screenshots/${data.debug_image}" target="_blank" class="download-link">📥 View Full Size</a>`;
+                        resultHtml += `</div>`;
+                    }
+                    
+                    document.getElementById('step2-result').innerHTML = resultHtml;
+                    
+                    log(`⏰ Timestamp Detection: x=${data.boundary_x} (${data.confidence} confidence via ${data.method_used})`, 'info');
+                    log(data.message, 'info');
+                    
+                } else {
+                    log(`❌ Timestamp detection failed: ${data.error}`, 'error');
+                    updateStatus('step2', 'error', data.error);
+                    document.getElementById('step2-result').innerHTML = `<span class="error-message">Error: ${data.error}</span>`;
+                    
+                    if (data.analysis) {
+                        log(`💡 Suggested action: ${data.analysis.suggested_action}`, 'info');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+                updateStatus('step2', 'error', error.message);
+                document.getElementById('step2-result').innerHTML = `<span class="error-message">API Error: ${error.message}</span>`;
+            }
+            
+            button.disabled = false;
+            button.innerHTML = '⏰ Timestamp Boundary Detection';
         });
 
         // Step 2d: Click Test
