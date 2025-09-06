@@ -8,11 +8,11 @@ Integrates dynamic window detection with existing bot functionality
 import time
 import pyautogui
 from typing import Optional, Tuple
-from .dynamic_window_finder import DynamicWindowFinder
+from .dynamic_window_finder import cDynamicWindowFinder
 from Constants import Constants
 
 
-class WindowManager:
+class cWindowManager:
     """Manages WeChat window detection and provides backward compatibility"""
     
     def __init__(self, use_dynamic_detection: bool = True):
@@ -23,7 +23,7 @@ class WindowManager:
             use_dynamic_detection: Whether to use dynamic detection or fall back to static
         """
         self.use_dynamic_detection = use_dynamic_detection
-        self.finder = DynamicWindowFinder() if use_dynamic_detection else None
+        self.finder = cDynamicWindowFinder() if use_dynamic_detection else None
         self.static_window = Constants.WECHAT_WINDOW
         self.last_detection_time = 0
         self.detection_interval = 30  # Re-detect every 30 seconds
@@ -213,7 +213,7 @@ class WindowManager:
     def enable_dynamic_detection(self):
         """Enable dynamic window detection"""
         if not self.finder:
-            self.finder = DynamicWindowFinder()
+            self.finder = cDynamicWindowFinder()
         self.use_dynamic_detection = True
         self.last_detection_time = 0  # Force refresh
         print("✅ 已启用动态窗口检测")
@@ -227,20 +227,20 @@ class WindowManager:
 # Global instance for backward compatibility
 _window_manager = None
 
-def get_window_manager(use_dynamic: bool = True) -> WindowManager:
+def fget_window_manager(use_dynamic: bool = True) -> cWindowManager:
     """Get global window manager instance"""
     global _window_manager
     if _window_manager is None:
         _window_manager = WindowManager(use_dynamic_detection=use_dynamic)
     return _window_manager
 
-def get_wechat_window() -> Tuple[int, int, int, int]:
+def fget_wechat_window() -> Tuple[int, int, int, int]:
     """Backward compatibility function for existing code"""
-    return get_window_manager().get_wechat_window()
+    return fget_window_manager().get_wechat_window()
 
-def capture_wechat_screenshot(save_path: Optional[str] = None) -> Optional[str]:
+def fcapture_wechat_screenshot(save_path: Optional[str] = None) -> Optional[str]:
     """Backward compatibility function for taking screenshots"""
-    return get_window_manager().capture_window_screenshot(save_path)
+    return fget_window_manager().capture_window_screenshot(save_path)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ from datetime import datetime
 import os
 from typing import Tuple, Optional, Dict, Any
 
-class TimestampDetector:
+class cTimestampDetector:
     """
     Timestamp left boundary detector using OpenCV computer vision techniques.
     
@@ -276,7 +276,7 @@ class TimestampDetector:
         }
 
 # Convenience function for direct usage
-def detect_timestamp_boundary(image_path: str, save_debug: bool = False) -> Dict[str, Any]:
+def fdetect_timestamp_boundary(image_path: str, save_debug: bool = False) -> Dict[str, Any]:
     """
     Convenience function to detect timestamp boundary.
     
@@ -287,7 +287,7 @@ def detect_timestamp_boundary(image_path: str, save_debug: bool = False) -> Dict
     Returns:
         Detection result dictionary
     """
-    detector = TimestampDetector()
+    detector = cTimestampDetector()
     return detector.detect_timestamp_boundary(image_path, save_debug)
 
 if __name__ == "__main__":

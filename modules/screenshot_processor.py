@@ -18,19 +18,19 @@ from typing import Dict, Optional, Tuple
 
 # Import screenshot capture functionality
 try:
-    from .m_ScreenShot_WeChatWindow import capture_screenshot
+    from .m_ScreenShot_WeChatWindow import fcapture_screenshot
     SCREENSHOT_AVAILABLE = True
 except ImportError:
     # Fallback import for direct execution
     try:
-        from m_ScreenShot_WeChatWindow import capture_screenshot
+        from m_ScreenShot_WeChatWindow import fcapture_screenshot
         SCREENSHOT_AVAILABLE = True
     except ImportError:
         print("⚠️  Screenshot module not available. Live capture disabled.")
         SCREENSHOT_AVAILABLE = False
 
 
-def capture_and_process_screenshot(output_dir: str = "pic/screenshots", 
+def fcapture_and_process_screenshot(output_dir: str = "pic/screenshots", 
                                   custom_filename: str = None) -> Optional[Tuple[str, Dict]]:
     """
     Capture a fresh WeChat screenshot and process it for card analysis
@@ -43,7 +43,7 @@ def capture_and_process_screenshot(output_dir: str = "pic/screenshots",
         Tuple of (screenshot_path, analysis_results) or None if failed
         
     Usage:
-        screenshot_path, results = capture_and_process_screenshot()
+        screenshot_path, results = fcapture_and_process_screenshot()
         if results:
             print(f"Found {results['cards_detected']} cards")
     """
@@ -57,7 +57,7 @@ def capture_and_process_screenshot(output_dir: str = "pic/screenshots",
         
         # Step 1: Capture fresh screenshot
         print("\n📸 Step 1: Capturing WeChat screenshot...")
-        screenshot_path = capture_screenshot(output_dir=output_dir, filename=custom_filename)
+        screenshot_path = fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
         
         if not screenshot_path:
             print("❌ Failed to capture screenshot")
@@ -67,7 +67,7 @@ def capture_and_process_screenshot(output_dir: str = "pic/screenshots",
         
         # Step 2: Process with card analysis
         print("\n🔍 Step 2: Processing card analysis...")
-        results = process_screenshot_file(screenshot_path)
+        results = fprocess_screenshot_file(screenshot_path)
         
         if results:
             print(f"\n✅ Analysis complete:")
@@ -84,7 +84,7 @@ def capture_and_process_screenshot(output_dir: str = "pic/screenshots",
         return None
 
 
-def process_screenshot_file(image_path: str) -> Optional[Dict]:
+def fprocess_screenshot_file(image_path: str) -> Optional[Dict]:
     """
     Process a screenshot file and return comprehensive analysis results
     
@@ -95,20 +95,24 @@ def process_screenshot_file(image_path: str) -> Optional[Dict]:
         Dictionary with analysis results or None if failed
     """
     try:
-        # Import detector classes from main module
+        # Import complete analysis pipeline from main module
         try:
             from . import m_Card_Processing  # Relative import for module usage
         except ImportError:
             import m_Card_Processing  # Direct import for standalone execution
         
-        # Initialize processors (debug_mode=False to prevent excessive file generation)
-        width_detector = m_Card_Processing.SimpleWidthDetector(debug_mode=False)
-        avatar_detector = m_Card_Processing.CardAvatarDetector(debug_mode=False) 
-        boundary_detector = m_Card_Processing.CardBoundaryDetector(debug_mode=False)
-        time_detector = m_Card_Processing.TimeBoxDetector(debug_mode=False)
-        name_detector = m_Card_Processing.ContactNameBoundaryDetector(debug_mode=False)
+        # Use the complete pipeline with coordinate saving
+        results = m_Card_Processing.fcomplete_card_analysis(image_path, debug_mode=False)
         
-        results = {}
+        # Save coordinates to wechat_ctx.json if analysis succeeded
+        if results:
+            m_Card_Processing.f_save_coordinates_to_context(image_path, results)
+        
+        return results
+        
+    except Exception as e:
+        print(f"❌ Error processing screenshot: {e}")
+        return None
         
         # 1. Width Detection
         width_result = width_detector.detect_width(image_path)
@@ -162,7 +166,7 @@ def process_screenshot_file(image_path: str) -> Optional[Dict]:
         return None
 
 
-def process_current_wechat_window() -> Optional[Dict]:
+def fprocess_current_wechat_window() -> Optional[Dict]:
     """
     Convenience function: Capture current WeChat window and analyze cards
     
@@ -170,19 +174,19 @@ def process_current_wechat_window() -> Optional[Dict]:
         Dictionary with complete analysis results or None if failed
         
     Usage:
-        results = process_current_wechat_window()
+        results = fprocess_current_wechat_window()
         if results:
             for i, card in enumerate(results['card_list'], 1):
                 print(f"Card {i}: {card['width']}×{card['height']}px")
     """
-    result = capture_and_process_screenshot()
+    result = fcapture_and_process_screenshot()
     if result:
         screenshot_path, analysis = result
         return analysis
     return None
 
 
-def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tuple[Dict, Dict]]:
+def fget_live_card_analysis(include_visualizations: bool = True) -> Optional[Tuple[Dict, Dict]]:
     """
     Get comprehensive live card analysis with optional visualizations
     
@@ -192,7 +196,7 @@ def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tupl
     Returns:
         Tuple of (analysis_results, visualization_paths) or None if failed
     """
-    result = capture_and_process_screenshot()
+    result = fcapture_and_process_screenshot()
     if not result:
         return None
         
@@ -208,7 +212,7 @@ def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tupl
                 import m_Card_Processing  # Direct import for standalone execution
             
             # Initialize detectors for visualizations
-            width_detector = m_Card_Processing.SimpleWidthDetector()  
+            width_detector = m_Card_Processing.BoundaryCoordinator()  
             avatar_detector = m_Card_Processing.CardAvatarDetector()
             boundary_detector = m_Card_Processing.CardBoundaryDetector()
             
@@ -233,7 +237,7 @@ def get_live_card_analysis(include_visualizations: bool = True) -> Optional[Tupl
     return analysis, visualization_paths
 
 
-def is_screenshot_available() -> bool:
+def fis_screenshot_available() -> bool:
     """
     Check if screenshot capture functionality is available
     
@@ -251,7 +255,7 @@ if __name__ == "__main__":
         print("✅ Screenshot capture available")
         
         # Test basic capture and processing
-        result = capture_and_process_screenshot()
+        result = fcapture_and_process_screenshot()
         if result:
             screenshot_path, analysis = result
             print(f"\n📊 Test Results:")

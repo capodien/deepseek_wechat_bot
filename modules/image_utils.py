@@ -21,7 +21,7 @@ from typing import Tuple, Optional
 from datetime import datetime
 
 
-def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+def ffind_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
     """
     Return the x (in original image coords) of the dominant vertical edge inside ROI.
     Works on narrow strips like your screenshot.
@@ -70,7 +70,7 @@ def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
     return xr, conf, prof
 
 
-def apply_level_adjustment(gray: np.ndarray, input_black_point: int = 32, 
+def fapply_level_adjustment(gray: np.ndarray, input_black_point: int = 32, 
                          input_white_point: int = 107, gamma: float = 0.67,
                          save_result: bool = False, output_filename: str = None) -> np.ndarray:
     """
@@ -117,7 +117,7 @@ def apply_level_adjustment(gray: np.ndarray, input_black_point: int = 32,
     return scaled
 
 
-def save_preprocessing_image(img: np.ndarray, filename: str, 
+def fsave_preprocessing_image(img: np.ndarray, filename: str, 
                            output_dir: str = "pic/screenshots") -> Optional[str]:
     """
     Save preprocessing step images for visualization and debugging
@@ -156,7 +156,7 @@ def save_preprocessing_image(img: np.ndarray, filename: str,
         return None
 
 
-def create_gradient_profile(img: np.ndarray, direction: str = 'vertical',
+def fcreate_gradient_profile(img: np.ndarray, direction: str = 'vertical',
                           roi: Tuple[int, int, int, int] = None) -> np.ndarray:
     """
     Create gradient profile for edge detection
@@ -198,7 +198,7 @@ def create_gradient_profile(img: np.ndarray, direction: str = 'vertical',
     return profile
 
 
-def detect_edges_canny(img: np.ndarray, low_threshold: int = 50, 
+def fdetect_edges_canny(img: np.ndarray, low_threshold: int = 50, 
                       high_threshold: int = 150, blur_size: int = 5) -> np.ndarray:
     """
     Advanced Canny edge detection with preprocessing
@@ -226,7 +226,7 @@ def detect_edges_canny(img: np.ndarray, low_threshold: int = 50,
     return edges
 
 
-def enhance_contrast(img: np.ndarray, method: str = 'clahe') -> np.ndarray:
+def fenhance_contrast(img: np.ndarray, method: str = 'clahe') -> np.ndarray:
     """
     Enhance image contrast using various methods
     
@@ -260,7 +260,7 @@ def enhance_contrast(img: np.ndarray, method: str = 'clahe') -> np.ndarray:
     return enhanced
 
 
-def find_color_transitions(img: np.ndarray, direction: str = 'horizontal',
+def ffind_color_transitions(img: np.ndarray, direction: str = 'horizontal',
                          threshold: int = 50) -> np.ndarray:
     """
     Find significant color transitions in image
@@ -290,7 +290,7 @@ def find_color_transitions(img: np.ndarray, direction: str = 'horizontal',
     return transitions
 
 
-def create_morphological_operations(img: np.ndarray, operation: str = 'opening',
+def fcreate_morphological_operations(img: np.ndarray, operation: str = 'opening',
                                    kernel_size: int = 5) -> np.ndarray:
     """
     Apply morphological operations for image cleanup
@@ -335,7 +335,7 @@ if __name__ == "__main__":
     print("✅ Test image created")
     
     # Test vertical edge detection
-    x_pos, confidence, profile = find_vertical_edge_x(test_img, rightmost=False)
+    x_pos, confidence, profile = ffind_vertical_edge_x(test_img, rightmost=False)
     print(f"✅ Vertical edge detected at x={x_pos} with confidence={confidence:.3f}")
     
     # Test level adjustment

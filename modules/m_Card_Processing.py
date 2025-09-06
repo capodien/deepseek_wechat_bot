@@ -6,7 +6,7 @@ Consolidated Card Processing Module (m_Card_Processing.py)
 This module consolidates six card processing functionalities with a universal coordinate system:
 
 ## Core Detector Classes:
-1. SimpleWidthDetector - Detects message card width boundaries
+1. BoundaryCoordinator - Detects message card width boundaries
 2. RightBoundaryDetector - Enhanced right boundary detection
 3. CardAvatarDetector - Detects avatar positions within cards  
 4. CardBoundaryDetector - Detects individual card boundaries
@@ -17,7 +17,7 @@ This module consolidates six card processing functionalities with a universal co
 
 ### WeChatCoordinateContext Class:
 Unified coordinate management system that provides:
-- Standardized coordinate storage for all processing steps
+- Standardized coordinate storage for all processing phases
 - OCR-ready region extraction with confidence scoring
 - Coordinate validation against image boundaries
 - Legacy format conversion for backward compatibility
@@ -27,22 +27,22 @@ Unified coordinate management system that provides:
 #### Basic Usage (Legacy Compatible):
 ```python
 # All existing code continues to work unchanged
-detector = SimpleWidthDetector()
+detector = cBoundaryCoordinator()
 result = detector.detect_width("screenshot.png")  # Returns (left, right, width)
 
-avatars, info = CardAvatarDetector().detect_avatars("screenshot.png")
-cards, info = CardBoundaryDetector().detect_cards("screenshot.png")
+avatars, info = cCardAvatarDetector().detect_avatars("screenshot.png")
+cards, info = cCardBoundaryDetector().detect_cards("screenshot.png")
 ```
 
 #### Universal Coordinate System Usage:
 ```python
 # Option 1: Let detectors create coordinate context automatically
-detector = SimpleWidthDetector()
+detector = cBoundaryCoordinator()
 result, coord_context = detector.detect_width("screenshot.png", return_context=True)
 # coord_context now contains structured coordinate data
 
 # Option 2: Provide existing coordinate context for population
-coord_context = WeChatCoordinateContext("screenshot.png", (800, 600))
+coord_context = cWeChatCoordinateContext("screenshot.png", (800, 600))
 result = detector.detect_width("screenshot.png", coord_context=coord_context)
 # coord_context is now populated with width boundaries
 
@@ -63,7 +63,7 @@ ocr_regions = results["ocr_regions"]  # OCR-ready extraction regions
     "global_boundaries": {
         "conversation_area": {
             "bbox": [50, 0, 700, 600],  # [x, y, width, height]
-            "source_step": "SimpleWidthDetector.detect_width",
+            "source_step": "BoundaryCoordinator.detect_width",
             "confidence": 0.95
         }
     },
@@ -94,7 +94,7 @@ contact_name_regions = coord_context.extract_all_regions("contact_names")
 timestamp_regions = coord_context.extract_all_regions("timestamps")
 
 # Batch OCR processing using OCRExtractionUtils
-ocr_batch = OCRExtractionUtils.create_ocr_batch_from_context(
+ocr_batch = cOCRExtractionUtils.create_ocr_batch_from_context(
     coord_context, "screenshot.png", ["contact_names", "timestamps"]
 )
 ```
@@ -147,12 +147,12 @@ except ImportError:
 
 # Import screenshot capture functionality (legacy support)
 try:
-    from .m_ScreenShot_WeChatWindow import capture_screenshot
+    from .m_ScreenShot_WeChatWindow import fcapture_screenshot
     SCREENSHOT_AVAILABLE = True
 except ImportError:
     # Fallback import for direct execution
     try:
-        from m_ScreenShot_WeChatWindow import capture_screenshot
+        from m_ScreenShot_WeChatWindow import fcapture_screenshot
         SCREENSHOT_AVAILABLE = True
     except ImportError:
         print("⚠️  Screenshot module not available. Live capture disabled.")
@@ -163,12 +163,12 @@ except ImportError:
 # WECHAT COORDINATE CONTEXT SYSTEM
 # =============================================================================
 
-class WeChatCoordinateContext:
+class cWeChatCoordinateContext:
     """
     Unified coordinate management system for WeChat processing pipeline
     
     Provides standardized coordinate storage, OCR-ready region extraction,
-    and consistent API across all 6 processing steps.
+    and consistent API across all 6 processing phases.
     """
     
     def __init__(self, image_path: str, image_dimensions: Tuple[int, int]):
@@ -430,7 +430,7 @@ class WeChatCoordinateContext:
 # COORDINATE CONVERSION UTILITIES
 # =============================================================================
 
-class CoordinateConverter:
+class cCoordinateConverter:
     """Utilities for converting between different coordinate formats"""
     
     @staticmethod
@@ -503,8 +503,8 @@ class CoordinateConverter:
     @staticmethod
     def bbox_distance(bbox1: List[int], bbox2: List[int]) -> float:
         """Calculate distance between bbox centers"""
-        center1 = CoordinateConverter.bbox_to_center(bbox1)
-        center2 = CoordinateConverter.bbox_to_center(bbox2)
+        center1 = cCoordinateConverter.bbox_to_center(bbox1)
+        center2 = cCoordinateConverter.bbox_to_center(bbox2)
         
         dx = center2[0] - center1[0]
         dy = center2[1] - center1[1]
@@ -515,7 +515,7 @@ class CoordinateConverter:
     def legacy_avatar_to_unified(avatar_dict: Dict) -> Dict:
         """Convert legacy avatar format to unified coordinate format"""
         bbox = avatar_dict.get("bbox", [0, 0, 0, 0])
-        center = avatar_dict.get("center", CoordinateConverter.bbox_to_center(bbox))
+        center = avatar_dict.get("center", cCoordinateConverter.bbox_to_center(bbox))
         
         return {
             "bbox": bbox,
@@ -544,7 +544,7 @@ class CoordinateConverter:
         
         # Convert avatar component
         if "avatar" in card_dict:
-            avatar_data = CoordinateConverter.legacy_avatar_to_unified(card_dict["avatar"])
+            avatar_data = cCoordinateConverter.legacy_avatar_to_unified(card_dict["avatar"])
             components["avatar"] = avatar_data
         
         # Convert name boundary component
@@ -564,7 +564,7 @@ class CoordinateConverter:
             time_data = card_dict["time_box"]
             components["timestamp"] = {
                 "bbox": time_data.get("bbox", [0, 0, 0, 0]),
-                "source_step": "STEP_6", 
+                "source_phase": "PHASE_6", 
                 "confidence": time_data.get("density_score", 0.8),
                 "ocr_suitable": True,
                 "expected_content": "timestamp",
@@ -579,7 +579,7 @@ class CoordinateConverter:
 # OCR EXTRACTION UTILITIES
 # =============================================================================
 
-class OCRExtractionUtils:
+class cOCRExtractionUtils:
     """Utilities for extracting regions from coordinate context for OCR processing"""
     
     @staticmethod
@@ -604,7 +604,7 @@ class OCRExtractionUtils:
             
             # Validate and clip bbox to image boundaries
             img_height, img_width = img.shape[:2]
-            clipped_bbox = CoordinateConverter.clip_bbox_to_image(bbox, img_width, img_height)
+            clipped_bbox = cCoordinateConverter.clip_bbox_to_image(bbox, img_width, img_height)
             x, y, w, h = clipped_bbox
             
             # Extract region
@@ -638,7 +638,7 @@ class OCRExtractionUtils:
             if not bbox:
                 continue
             
-            extracted_region = OCRExtractionUtils.extract_region_from_image(image_path, bbox)
+            extracted_region = cOCRExtractionUtils.extract_region_from_image(image_path, bbox)
             if extracted_region is not None:
                 results.append({
                     'card_id': region.get('card_id'),
@@ -689,7 +689,7 @@ class OCRExtractionUtils:
         return saved_paths
     
     @staticmethod
-    def create_ocr_batch_from_context(coord_context: WeChatCoordinateContext, 
+    def create_ocr_batch_from_context(coord_context: cWeChatCoordinateContext, 
                                     image_path: str,
                                     content_types: List[str] = None,
                                     min_confidence: float = 0.5) -> Dict[str, List[Dict]]:
@@ -697,7 +697,7 @@ class OCRExtractionUtils:
         Create OCR-ready batches from coordinate context
         
         Args:
-            coord_context: WeChatCoordinateContext instance
+            coord_context: ccWeChatCoordinateContext instance
             image_path: Path to source image
             content_types: List of content types to extract ('contact_names', 'timestamps', 'messages')
             min_confidence: Minimum confidence threshold
@@ -712,7 +712,7 @@ class OCRExtractionUtils:
         
         for content_type in content_types:
             regions = coord_context.extract_all_regions(content_type)
-            extracted = OCRExtractionUtils.batch_extract_regions(
+            extracted = cOCRExtractionUtils.batch_extract_regions(
                 image_path, regions, min_confidence
             )
             ocr_batches[content_type] = extracted
@@ -722,18 +722,125 @@ class OCRExtractionUtils:
 
 
 # =============================================================================
-# STEP 1: SIMPLE WIDTH DETECTOR
+# PHASE 1: LEFT BOUNDARY DETECTOR
 # =============================================================================
 
-# Use find_vertical_edge_x from image_utils module
-if MODULAR_IMPORTS_AVAILABLE:
-    find_vertical_edge_x = image_utils.find_vertical_edge_x
-else:
-    # Legacy fallback implementation
-    def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+class cLeftBoundaryDetector:
+    """
+    Detects the left boundary of WeChat conversation area using vertical edge detection.
+    
+    📋 PURPOSE:
+    Identifies the visual boundary between WeChat's sidebar and the main conversation
+    area by finding the strongest vertical edge in the left portion of the screen.
+    This establishes the left coordinate for all subsequent message card processing.
+    
+    📌 INPUT CONTRACT:
+    - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+    - debug_mode: bool - Enable visualization output (default: False)
+    
+    📌 OUTPUT CONTRACT:
+    - Success: int - X-coordinate of left boundary in pixels
+    - Failure: None - Returns None if detection fails
+    - Range: Typically 50-150px from left edge
+    
+    🔧 ALGORITHM:
+    1. Load image and focus on left 65% (conversation area)
+    2. Apply Sobel edge detection to find vertical edges
+    3. Create 1D intensity profile by averaging gradients
+    4. Find strongest edge peak using Gaussian smoothing
+    5. Apply 8px offset for actual boundary position
+    
+    📊 KEY PARAMETERS:
+    - CONVERSATION_WIDTH_RATIO = 0.65  # Search left 65% of screen
+    - SIDEBAR_OFFSET = 8               # Pixels offset from edge to boundary
+    - EDGE_THRESHOLD_LOW = 30          # Minimum edge strength
+    
+    🎨 VISUAL OUTPUT:
+    - Debug file: YYYYMMDD_HHMMSS_01_LeftBoundary_XXXpx.png
+    - Yellow line: Detected edge position
+    - Green line: Actual boundary (with offset)
+    - Text overlay: Coordinates and confidence score
+    
+    🔍 DEBUG VARIABLES:
+    - Key variables used for visualization:
+      • detected_edge: int - X-coordinate where vertical edge detected (yellow line)
+      • left_boundary: int - Final boundary after offset applied (green line)
+      • confidence: float (0-1) - Peak strength vs noise ratio (text overlay)
+      • profile: np.array - 1D gradient intensity profile (could be plotted)
+    - Debug triggers: When debug_mode=True in constructor
+    - Output format: PNG saved to pic/screenshots/ with timestamp prefix
+    
+    ⚙️ DEPENDENCIES:
+    - Required: opencv-python, numpy
+    - Optional: image_utils.ffind_vertical_edge_x (modular import)
+    - Integrates with: BoundaryCoordinator for complete width detection
+    """
+    
+    def __init__(self, debug_mode: bool = False):
+        # Debug mode control for visualization generation
+        self.debug_mode = debug_mode
+        
+        # Edge detection parameters
+        self.CONVERSATION_WIDTH_RATIO = 0.65  # Focus on left 65% of screen where cards are
+        self.EDGE_THRESHOLD_LOW = 30
+        self.EDGE_THRESHOLD_HIGH = 100
+        self.SIDEBAR_OFFSET = 8  # Offset from detected edge to actual boundary
+        
+    def detect_left_boundary(self, image_path: str) -> Optional[int]:
         """
+        Detect left boundary of WeChat conversation area
+        
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+        
+        📌 OUTPUT CONTRACT:
+        - Success: int - Left boundary x-coordinate in pixels
+        - Failure: None - Detection failedLet
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True
+        """
+        try:
+            # Load and validate image
+            img = cv2.imread(image_path)
+            if img is None:
+                print(f"❌ Could not load image: {image_path}")
+                return None
+                
+            print(f"🎯 1. Left Boundary Detection: {os.path.basename(image_path)}")
+            img_height, img_width = img.shape[:2]
+            print(f"📐 Image dimensions: {img_width}×{img_height}")
+            
+            # Use modular image utils if available, otherwise fallback
+            if MODULAR_IMPORTS_AVAILABLE:
+                x_pos, confidence, profile = image_utils.ffind_vertical_edge_x(
+                    img, x0=0, x1=int(img_width * self.CONVERSATION_WIDTH_RATIO), rightmost=False
+                )
+            else:
+                x_pos, confidence, profile = self._find_vertical_edge_fallback(
+                    img, x0=0, x1=int(img_width * self.CONVERSATION_WIDTH_RATIO), rightmost=False
+                )
+            
+            # Apply sidebar offset for actual boundary
+            left_boundary = max(0, x_pos - self.SIDEBAR_OFFSET)
+            
+            print(f"🔍 Edge detected at: {x_pos}px (confidence: {confidence:.3f})")
+            print(f"✅ Left boundary: {left_boundary}px (with {self.SIDEBAR_OFFSET}px offset)")
+            
+            # Generate debug visualization if enabled
+            if self.debug_mode:
+                self._generate_debug_visualization(img, x_pos, left_boundary, confidence, profile)
+            
+            return left_boundary
+            
+        except Exception as e:
+            print(f"❌ Left boundary detection error: {e}")
+            return None
+    
+    def _find_vertical_edge_fallback(self, img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+        """
+        Legacy fallback implementation of find_vertical_edge_x
         Return the x (in original image coords) of the dominant vertical edge inside ROI.
-        Works on narrow strips like your screenshot.
         """
         if img.ndim == 3:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -768,14 +875,115 @@ else:
         conf = max(0.0, min(1.0, (peak - med) / (6*mad)))  # rough score
 
         return xr, conf, prof
+    
+    def _generate_debug_visualization(self, img, detected_edge, left_boundary, confidence, profile):
+        """Generate debug visualization showing left boundary detection"""
+        try:
+            from datetime import datetime
+            
+            # Create visualization overlay
+            result = img.copy()
+            img_height, img_width = img.shape[:2]
+            
+            # Draw detected edge line (yellow)
+            cv2.line(result, (detected_edge, 0), (detected_edge, img_height), (0, 255, 255), 2)
+            
+            # Draw actual left boundary (green)  
+            cv2.line(result, (left_boundary, 0), (left_boundary, img_height), (0, 255, 0), 3)
+            
+            # Add text annotations
+            cv2.putText(result, f"Edge: {detected_edge}px", (detected_edge + 10, 30), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+            cv2.putText(result, f"Boundary: {left_boundary}px", (left_boundary + 10, 60),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            cv2.putText(result, f"Confidence: {confidence:.3f}", (10, img_height - 20),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            
+            # Save debug visualization
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = f"pic/screenshots/{timestamp}_01_LeftBoundary_{left_boundary}px.png"
+            
+            os.makedirs("pic/screenshots", exist_ok=True)
+            cv2.imwrite(output_path, result)
+            print(f"🎨 Left boundary debug visualization: {output_path}")
+            
+        except Exception as e:
+            print(f"⚠️ Could not generate debug visualization: {e}")
+
+
+# Legacy compatibility - keep find_vertical_edge_x function for backward compatibility
+if MODULAR_IMPORTS_AVAILABLE:
+    find_vertical_edge_x = image_utils.ffind_vertical_edge_x
+else:
+    def find_vertical_edge_x(img, x0=0, x1=None, y0=0, y1=None, rightmost=True):
+        """Legacy compatibility function - use LeftBoundaryDetector class instead"""
+        detector = cLeftBoundaryDetector()
+        return detector._find_vertical_edge_fallback(img, x0, x1, y0, y1, rightmost)
 
 
 # =============================================================================
-# STEP 2: RIGHT BOUNDARY DETECTOR
+# PHASE 2: RIGHT BOUNDARY DETECTOR
 # =============================================================================
 
-class RightBoundaryDetector:
-    """Right boundary detector for WeChat message cards using pre-processed high-contrast images"""
+class cRightBoundaryDetector:
+    """
+    Detects the right boundary of WeChat conversation area using horizontal pixel difference analysis.
+    
+    📋 PURPOSE:
+    Identifies the visual boundary that marks the right edge of the WeChat conversation
+    content area by analyzing horizontal pixel differences in high-contrast processed images.
+    Uses Photoshop-style level adjustments and red region detection to find strong
+    vertical transitions that indicate content boundaries.
+    
+    📌 INPUT CONTRACT:
+    - img: np.ndarray - WeChat screenshot image (BGR or grayscale)
+    - img_width: int - Image width in pixels for boundary calculations
+    - preprocessed_image_path: Optional[str] - Path for preprocessed image (unused)
+    - debug_mode: bool - Enable visualization output (default: False)
+    
+    📌 OUTPUT CONTRACT:
+    - Success: int - X-coordinate of right boundary in pixels
+    - Failure: int - Fallback boundary (80% of image width)
+    - Range: Typically 300-800px from left edge (conversation content area)
+    
+    🔧 ALGORITHM:
+    1. Apply Photoshop-style levels adjustment (gamma correction)
+    2. Calculate horizontal pixel differences using np.diff()
+    3. Identify red regions (transitions > 100 intensity)
+    4. Search for strongest vertical boundary in center region (360-1368px)
+    5. Rank boundary candidates by red pixel intensity
+    6. Return strongest boundary or geometric fallback
+    
+    📊 KEY PARAMETERS:
+    - INPUT_BLACK_POINT = 32       # Photoshop levels input black
+    - INPUT_WHITE_POINT = 107      # Photoshop levels input white  
+    - GAMMA = 0.67                 # Gamma correction value
+    - EDGE_THRESHOLD = 0.10        # 10% threshold for preprocessing
+    - PREPROCESSED_THRESHOLD = 0.005  # 0.5% threshold for transitions
+    - MIN_BOUNDARY_PX = 200        # Minimum boundary position
+    
+    🎨 VISUAL OUTPUT:
+    - Preprocessing: YYYYMMDD_HHMMSS_02_photoshop_levels_gamma.png
+    - Heatmap: YYYYMMDD_HHMMSS_03_horizontal_differences.png
+    - With boundary: YYYYMMDD_HHMMSS_04_horizontal_differences_with_boundary.png
+    - Dual-plot visualization showing heatmap + profile with red boundary line
+    
+    🔍 DEBUG VARIABLES:
+    - Key variables used for visualization:
+      • scaled: np.ndarray - Level-adjusted grayscale image (preprocessing output)
+      • diff_x: np.ndarray - Horizontal pixel differences matrix (heatmap data)
+      • red_regions: np.ndarray - Boolean mask of strong transitions >100
+      • boundary_candidates: List[Tuple[int, int]] - (x_position, intensity) pairs
+      • strongest_x: int - Final detected boundary x-coordinate (red line)
+      • profile: np.ndarray - Mean differences per column (profile plot)
+    - Debug triggers: When debug_mode=True in constructor
+    - Output format: PNG heatmaps saved to pic/screenshots/ with timestamp
+    
+    ⚙️ DEPENDENCIES:
+    - Required: opencv-python, numpy, matplotlib
+    - Optional: None (self-contained implementation)
+    - Integrates with: BoundaryCoordinator for complete width detection
+    """
     
     def __init__(self, debug_mode: bool = False):
         # Debug mode control for visualization generation
@@ -803,10 +1011,10 @@ class RightBoundaryDetector:
         in_black, in_white = self.INPUT_BLACK_POINT, self.INPUT_WHITE_POINT
         gamma = self.GAMMA
         
-        # Step 1: Normalize to 0-1 range and clip
+        # Normalize to 0-1 range and clip
         arr = np.clip((gray - in_black) / (in_white - in_black), 0, 1)
         
-        # Step 2: Apply gamma correction and scale to 0-255
+        # Apply gamma correction and scale to 0-255
         arr = (arr ** (1/gamma)) * 255
         
         # Convert to uint8
@@ -819,14 +1027,14 @@ class RightBoundaryDetector:
         print(f"    - Input black: {in_black}")
         print(f"    - Input white: {in_white}")
         print(f"    - Gamma: {gamma}")
-        print(f"    - Step 1: arr = clip((pixel - {in_black}) / ({in_white} - {in_black}), 0, 1)")
-        print(f"    - Step 2: arr = (arr ** (1/{gamma})) * 255")
+        print(f"    - Normalize: arr = clip((pixel - {in_black}) / ({in_white} - {in_black}), 0, 1)")
+        print(f"    - Gamma correction: arr = (arr ** (1/{gamma})) * 255")
         print(f"  📸 Image saved: 02_photoshop_levels_gamma.png")
         
         return scaled
     
     def _save_preprocessing_image(self, img: np.ndarray, filename: str):
-        """Save preprocessing step images for visualization"""
+        """Save preprocessing phase images for visualization"""
         import os
         from datetime import datetime
         
@@ -1008,7 +1216,7 @@ class RightBoundaryDetector:
             return ""
     
     def detect_right_boundary(self, img: np.ndarray = None, img_width: int = None, 
-                              preprocessed_image_path: str = None, coord_context: 'WeChatCoordinateContext' = None) -> int:
+                              preprocessed_image_path: str = None, coord_context: 'cWeChatCoordinateContext' = None) -> int:
         """
         Simplified right boundary detection using horizontal pixel difference visualization
         
@@ -1022,14 +1230,14 @@ class RightBoundaryDetector:
             img: Original image (optional, used for fallback preprocessing)
             img_width: Width of the original image (optional)
             preprocessed_image_path: Path to preprocessed level-adjusted image
-            coord_context: Optional WeChatCoordinateContext to populate with results
+            coord_context: Optional cWeChatCoordinateContext to populate with results
             
         Returns:
             int: boundary_position_px
         """
         print(f"  🎯 2. Simplified Visual Pattern Boundary Detection")
         
-        # Step 1: Load and prepare image with high-contrast preprocessing
+        # Load and prepare image with high-contrast preprocessing
         if preprocessed_image_path and os.path.exists(preprocessed_image_path):
             print(f"  📸 Loading preprocessed image: {os.path.basename(preprocessed_image_path)}")
             adjusted = cv2.imread(preprocessed_image_path, cv2.IMREAD_GRAYSCALE)
@@ -1043,7 +1251,7 @@ class RightBoundaryDetector:
             
         img_width = img_width or adjusted.shape[1]
         
-        # Step 2: Create horizontal pixel differences (like your visualization)
+        # Create horizontal pixel differences (like your visualization)
         print(f"  📊 Creating horizontal pixel difference pattern")
         diff_x = np.diff(adjusted.astype(np.int16), axis=1)
         
@@ -1051,7 +1259,7 @@ class RightBoundaryDetector:
         if self.debug_mode:
             self._generate_horizontal_differences_heatmap(diff_x, None, "03_horizontal_differences")
         
-        # Step 3: Detect red regions (strong positive transitions) - these are the boundaries we want
+        # Detect red regions (strong positive transitions) - these are the boundaries we want
         red_threshold = 100  # Red regions in your visualization (high positive values)
         red_regions = diff_x > red_threshold
         
@@ -1059,7 +1267,7 @@ class RightBoundaryDetector:
         red_pixel_count = np.sum(red_regions)
         print(f"  📍 Found {red_pixel_count} red pixels representing strong transitions")
         
-        # Step 4: Find FIRST (leftmost) boundary from red regions
+        # Find FIRST (leftmost) boundary from red regions
         # Count red pixels per column (vertical projection)
         red_column_intensity = np.sum(red_regions, axis=0)
         
@@ -1093,7 +1301,7 @@ class RightBoundaryDetector:
             for i, (x, intensity) in enumerate(leftmost_candidates, 1):
                 print(f"      {i}. x={x:4d}px (red intensity: {intensity:3d})")
         
-        # Step 5: Select STRONGEST red boundary (highest intensity)
+        # Select STRONGEST red boundary (highest intensity)
         if boundary_candidates:
             # Sort by intensity (strongest first)
             boundary_candidates.sort(key=lambda b: b[1], reverse=True)
@@ -1135,45 +1343,51 @@ class RightBoundaryDetector:
         return fallback
 
 
-class SimpleWidthDetector:
-    """Enhanced width detector with dual-boundary coordination and visual marker integration"""
+class cBoundaryCoordinator:
+    """Boundary coordination class that combines left and right boundary detection for complete conversation area analysis"""
     
     def __init__(self, debug_mode: bool = False):
-        # Simple parameters for width detection only
-        self.CONVERSATION_WIDTH_RATIO = 0.65  # Focus on left 65% of screen where cards are
-        self.EDGE_THRESHOLD_LOW = 30
-        self.EDGE_THRESHOLD_HIGH = 100
-        
         # Debug mode control for visualization generation
         self.debug_mode = debug_mode
         
-        # Initialize right boundary detector with enhanced capabilities
-        self.right_detector = RightBoundaryDetector(debug_mode=debug_mode)
+        # Initialize both boundary detectors
+        self.left_detector = cLeftBoundaryDetector(debug_mode=debug_mode)
+        self.right_detector = cRightBoundaryDetector(debug_mode=debug_mode)
         
-        # Dual-boundary coordination storage for blue line visualization integration
+        # Dual-boundary coordination storage for visualization integration
         self._boundary_markers = {
             'left': {'position': None, 'confidence': None, 'method': None},
             'right': {'position': None, 'confidence': None, 'method': None}
         }
         
     def detect_width(self, image_path: str, preprocessed_image_path: str = None, 
-                     coord_context: 'WeChatCoordinateContext' = None, 
+                     coord_context: 'cWeChatCoordinateContext' = None, 
                      return_context: bool = False) -> Optional[Tuple[int, int, int]]:
         """
         Enhanced width detection with dual-boundary coordination and blue line visualization integration
         
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+        - preprocessed_image_path: Optional[str] - Pre-processed level-adjusted image path
+        - coord_context: Optional[WeChatCoordinateContext] - Coordinate context to populate
+        - return_context: bool - Whether to return coordinate context with results
+        
+        📌 OUTPUT CONTRACT:
+        Standard Mode (return_context=False):
+        - Success: Tuple[int, int, int] - (left_boundary, right_boundary, detected_width)
+        - Failure: None
+        
+        Context Mode (return_context=True): 
+        - Success: (Tuple[int, int, int], cWeChatCoordinateContext) 
+        - Failure: (None, cWeChatCoordinateContext)
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True
+        - Updates coordinate context with conversation_area boundaries
+        - Populates boundary markers for downstream processing
+        
         Implements synchronized left and right boundary detection with confidence scoring
         and visual marker data compatible with horizontal pixel difference analysis
-        
-        Args:
-            image_path: Path to the original WeChat screenshot
-            preprocessed_image_path: Path to pre-processed level-adjusted image (recommended)
-            coord_context: Optional WeChatCoordinateContext to populate with results
-            return_context: If True, return (results, coord_context) instead of just results
-            
-        Returns: 
-            - If return_context=False: (left_boundary, right_boundary, width) or None if failed
-            - If return_context=True: ((left_boundary, right_boundary, width), coord_context) or (None, coord_context)
         """
         print(f"🎯 1. Enhanced Dual-Boundary Width Detection: {os.path.basename(image_path)}")
         
@@ -1186,13 +1400,10 @@ class SimpleWidthDetector:
         print(f"📐 Image dimensions: {img.shape[1]}×{img.shape[0]}")
         img_height, img_width = img.shape[:2]
         
-        # Phase 2: Left Boundary Detection with Confidence Scoring
+        # Phase 2: Left Boundary Detection using LeftBoundaryDetector
         print(f"🔍 Phase 2: Left Boundary Detection")
-        conversation_width = int(img_width * self.CONVERSATION_WIDTH_RATIO)
-        conversation_area = img[:, :conversation_width]
-        print(f"  💬 Conversation search area: {conversation_area.shape[1]}×{conversation_area.shape[0]}")
-        
-        left_boundary, left_confidence = self._detect_left_boundary_with_confidence(conversation_area)
+        left_boundary = self.left_detector.detect_left_boundary(image_path)
+        left_confidence = 0.8  # Default confidence, can be enhanced later
         
         # Store left boundary marker data
         self._boundary_markers['left'] = {
@@ -1244,7 +1455,7 @@ class SimpleWidthDetector:
         # Create or initialize coordinate context if needed
         if return_context and coord_context is None:
             img_height, img_width = img.shape[:2]
-            coord_context = WeChatCoordinateContext(image_path, (img_width, img_height))
+            coord_context = cWeChatCoordinateContext(image_path, (img_width, img_height))
         
         # Populate coordinate context if provided
         if coord_context is not None:
@@ -1252,7 +1463,7 @@ class SimpleWidthDetector:
             coord_context.add_global_boundary(
                 "conversation_area", 
                 conversation_bbox, 
-                "SimpleWidthDetector.detect_width", 
+                "BoundaryCoordinator.detect_width", 
                 min(self._boundary_markers['left']['confidence'], self._boundary_markers['right']['confidence'])
             )
         
@@ -1311,58 +1522,112 @@ class SimpleWidthDetector:
         }
     
     def _create_enhanced_visual_result(self, img: np.ndarray, image_path: str):
-        """Create enhanced visual result with blue line markers like your visualization"""
+        """Create enhanced professional visual result with clean boundary markers"""
         left_data = self._boundary_markers['left']
         right_data = self._boundary_markers['right']
         
         if left_data['position'] is None or right_data['position'] is None:
             return
         
-        # Create enhanced visualization
+        # Create enhanced visualization with clean background
         result_img = img.copy()
         img_height, img_width = img.shape[:2]
         
-        # Draw blue vertical lines (like your horizontal pixel difference visualization)
+        # Apply subtle overlay for better contrast
+        overlay = result_img.copy()
+        cv2.rectangle(overlay, (0, 0), (img_width, img_height), (245, 245, 245), -1)
+        result_img = cv2.addWeighted(result_img, 0.7, overlay, 0.3, 0)
+        
         left_pos = left_data['position']
         right_pos = right_data['position']
-        
-        # Left boundary - blue line
-        cv2.line(result_img, (left_pos, 0), (left_pos, img_height), (255, 100, 0), 3)  # Blue
-        
-        # Right boundary - blue line  
-        cv2.line(result_img, (right_pos, 0), (right_pos, img_height), (255, 100, 0), 3)  # Blue
-        
-        # Enhanced info panel
-        panel_height = 120
-        cv2.rectangle(result_img, (left_pos, 20), (right_pos, 20 + panel_height), (255, 255, 255), -1)
-        cv2.rectangle(result_img, (left_pos, 20), (right_pos, 20 + panel_height), (0, 0, 0), 2)
-        
-        # Text annotations
-        font = cv2.FONT_HERSHEY_SIMPLEX
         width = right_pos - left_pos
         
-        # Main width annotation
-        cv2.putText(result_img, f"Width: {width}px", 
-                   (left_pos + 10, 45), font, 0.8, (0, 0, 0), 2)
+        # Professional blue boundary lines with shadow effect
+        line_color = (220, 120, 50)  # Professional blue
+        shadow_color = (180, 100, 40)  # Darker shadow
+        line_thickness = 4
         
-        # Boundary positions
-        cv2.putText(result_img, f"L:{left_pos}px (conf:{left_data['confidence']:.2f})", 
-                   (left_pos + 10, 70), font, 0.6, (0, 100, 200), 2)
-        cv2.putText(result_img, f"R:{right_pos}px (conf:{right_data['confidence']:.2f})", 
-                   (left_pos + 10, 90), font, 0.6, (0, 100, 200), 2)
+        # Shadow lines (offset by 2px)
+        cv2.line(result_img, (left_pos + 2, 2), (left_pos + 2, img_height), shadow_color, line_thickness)
+        cv2.line(result_img, (right_pos + 2, 2), (right_pos + 2, img_height), shadow_color, line_thickness)
         
-        # Method annotations
-        cv2.putText(result_img, f"Methods: {left_data['method']} + {right_data['method']}", 
-                   (left_pos + 10, 115), font, 0.5, (100, 100, 100), 1)
+        # Main boundary lines
+        cv2.line(result_img, (left_pos, 0), (left_pos, img_height), line_color, line_thickness)
+        cv2.line(result_img, (right_pos, 0), (right_pos, img_height), line_color, line_thickness)
         
-        # Blue line markers at top and bottom (like your visualization)
-        marker_size = 8
-        # Top markers
-        cv2.circle(result_img, (left_pos, 10), marker_size, (255, 100, 0), -1)
-        cv2.circle(result_img, (right_pos, 10), marker_size, (255, 100, 0), -1)
-        # Bottom markers
-        cv2.circle(result_img, (left_pos, img_height - 10), marker_size, (255, 100, 0), -1)
-        cv2.circle(result_img, (right_pos, img_height - 10), marker_size, (255, 100, 0), -1)
+        # Professional info panel with rounded corners effect
+        panel_width = max(350, int(width * 0.8))
+        panel_height = 140
+        panel_x = left_pos + (width - panel_width) // 2
+        panel_y = 30
+        
+        # Panel shadow
+        cv2.rectangle(result_img, (panel_x + 3, panel_y + 3), 
+                     (panel_x + panel_width + 3, panel_y + panel_height + 3), 
+                     (200, 200, 200), -1)
+        
+        # Main panel with gradient-like effect
+        cv2.rectangle(result_img, (panel_x, panel_y), 
+                     (panel_x + panel_width, panel_y + panel_height), 
+                     (250, 250, 250), -1)
+        cv2.rectangle(result_img, (panel_x, panel_y), 
+                     (panel_x + panel_width, panel_y + panel_height), 
+                     (100, 100, 100), 2)
+        
+        # Professional typography with better positioning
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        text_color = (50, 50, 50)  # Dark gray
+        accent_color = (40, 80, 160)  # Professional blue
+        
+        # Title with larger font
+        title_y = panel_y + 35
+        cv2.putText(result_img, f"BOUNDARY DETECTION", 
+                   (panel_x + 15, title_y), font, 0.9, text_color, 2)
+        
+        # Width measurement (prominent)
+        width_y = title_y + 35
+        cv2.putText(result_img, f"Detected Width: {width}px", 
+                   (panel_x + 15, width_y), font, 0.8, accent_color, 2)
+        
+        # Boundary details
+        details_y = width_y + 25
+        cv2.putText(result_img, f"Left: {left_pos}px (conf: {left_data['confidence']:.2f})", 
+                   (panel_x + 15, details_y), font, 0.6, text_color, 1)
+        
+        cv2.putText(result_img, f"Right: {right_pos}px (conf: {right_data['confidence']:.2f})", 
+                   (panel_x + 15, details_y + 20), font, 0.6, text_color, 1)
+        
+        # Method info (smaller text)
+        method_y = details_y + 45
+        method_text = f"Methods: {left_data.get('method', 'auto')} + {right_data.get('method', 'auto')}"
+        cv2.putText(result_img, method_text, 
+                   (panel_x + 15, method_y), font, 0.5, (120, 120, 120), 1)
+        
+        # Professional circular markers at boundaries
+        marker_size = 10
+        marker_color = (220, 120, 50)  # Matching line color
+        marker_border = (180, 100, 40)  # Darker border
+        
+        # Top markers with shadow effect
+        cv2.circle(result_img, (left_pos + 1, 11), marker_size, marker_border, -1)
+        cv2.circle(result_img, (right_pos + 1, 11), marker_size, marker_border, -1)
+        cv2.circle(result_img, (left_pos, 10), marker_size, marker_color, -1)
+        cv2.circle(result_img, (right_pos, 10), marker_size, marker_color, -1)
+        
+        # Bottom markers with shadow effect
+        cv2.circle(result_img, (left_pos + 1, img_height - 9), marker_size, marker_border, -1)
+        cv2.circle(result_img, (right_pos + 1, img_height - 9), marker_size, marker_border, -1)
+        cv2.circle(result_img, (left_pos, img_height - 10), marker_size, marker_color, -1)
+        cv2.circle(result_img, (right_pos, img_height - 10), marker_size, marker_color, -1)
+        
+        # Add subtle measurement arrows
+        arrow_y = panel_y + panel_height + 20
+        cv2.arrowedLine(result_img, (left_pos, arrow_y), (right_pos, arrow_y), accent_color, 2, tipLength=0.02)
+        cv2.arrowedLine(result_img, (right_pos, arrow_y), (left_pos, arrow_y), accent_color, 2, tipLength=0.02)
+        
+        # Width label below arrows
+        label_x = left_pos + width // 2 - 30
+        cv2.putText(result_img, f"{width}px", (label_x, arrow_y + 25), font, 0.7, accent_color, 2)
         
         # Save enhanced result
         screenshot_dir = "pic/screenshots"
@@ -1566,10 +1831,10 @@ class SimpleWidthDetector:
 
 
 # =============================================================================
-# STEP 3: CARD AVATAR DETECTOR
+# PHASE 3: CARD AVATAR DETECTOR
 # =============================================================================
 
-class CardAvatarDetector:
+class cCardAvatarDetector:
     """
     Advanced avatar detector using gradient projection and geometric filtering
     Specifically optimized for WeChat message card layouts
@@ -1577,7 +1842,7 @@ class CardAvatarDetector:
     
     def __init__(self, debug_mode: bool = False):
         # Initialize width detector for dynamic boundary detection
-        self.width_detector = SimpleWidthDetector(debug_mode=debug_mode)
+        self.width_detector = cBoundaryCoordinator(debug_mode=debug_mode)
         
         # Avatar size constraints (adjustable based on DPI)
         self.MIN_AVATAR_SIZE = 25       # Minimum avatar dimension
@@ -1674,22 +1939,29 @@ class CardAvatarDetector:
         
         return [boxes[i] for i in keep]
 
-    def detect_avatars(self, image_path: str, coord_context: 'WeChatCoordinateContext' = None, 
+    def detect_avatars(self, image_path: str, coord_context: 'cWeChatCoordinateContext' = None, 
                        return_context: bool = False) -> Tuple[List[Dict], Dict]:
         """
         Detect avatars using gradient projection and geometric filtering.
         
-        Args:
-            image_path: Path to the WeChat screenshot
-            coord_context: Optional WeChatCoordinateContext to populate with results
-            return_context: If True, return ((avatars, info), coord_context) instead of (avatars, info)
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, conversation area visible)
+        - coord_context: Optional[WeChatCoordinateContext] - Coordinate context for integration
+        - return_context: bool - Whether to return coordinate context with results
         
-        Returns:
-            - If return_context=False: Tuple of (avatar_results, detection_info)
-            - If return_context=True: ((avatar_results, detection_info), coord_context)
-            
-            avatar_results: List of detected avatars with bbox and center
-            detection_info: Diagnostic information about the detection process
+        📌 OUTPUT CONTRACT:
+        Standard Mode (return_context=False):
+        - Success: Tuple[List[Dict], Dict] - (avatar_results, detection_info)
+        - avatar_results: List of {"bbox": [x,y,w,h], "center": [cx,cy], "area": int, "avatar_id": int}
+        - detection_info: {"total_avatars": int, "processing_time": float, "method": str}
+        
+        Context Mode (return_context=True):
+        - Success: ((avatar_results, detection_info), cWeChatCoordinateContext)
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True
+        - Updates coordinate context with avatar component data
+        - Validates avatar positions against conversation area boundaries
         """
         # Load image
         img = cv2.imread(image_path)
@@ -1703,7 +1975,7 @@ class CardAvatarDetector:
         print(f"🎯 3. Advanced Avatar Detection: {os.path.basename(image_path)}")
         print(f"📐 Image size: {W}x{H}")
         
-        # Step 1: Use dynamic width detection to determine card boundaries
+        # Use dynamic width detection to determine card boundaries
         print(f"  🔍 Detecting dynamic card boundaries...")
         width_result = self.width_detector.detect_width(image_path)
         
@@ -1743,7 +2015,7 @@ class CardAvatarDetector:
         
         print(f"  📊 Avatar search area: x={x0}-{x0+wR}px ({boundary_source} left boundary, fixed avatar column width)")
         
-        # Step 2: Edge detection with morphology to reveal rounded-square thumbnails
+        # Edge detection with morphology to reveal rounded-square thumbnails
         blur = cv2.bilateralFilter(gray_p, self.BILATERAL_D, 
                                   self.BILATERAL_SIGMA_COLOR, 
                                   self.BILATERAL_SIGMA_SPACE)
@@ -1752,7 +2024,7 @@ class CardAvatarDetector:
         edges = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, self.DILATE_KERNEL_SIZE), 
                          iterations=self.DILATE_ITERATIONS)
         
-        # Step 3: Find contours and apply geometric filters
+        # Find contours and apply geometric filters
         cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         print(f"  🔍 Found {len(cnts)} contours")
         
@@ -1788,11 +2060,11 @@ class CardAvatarDetector:
         
         print(f"  ✅ Filtered to {len(candidates)} avatar candidates")
         
-        # Step 4: Apply non-maximum suppression
+        # Apply non-maximum suppression
         boxes = self.nms_boxes(candidates, iou_thresh=self.NMS_IOU_THRESHOLD)
         print(f"  🎯 After NMS: {len(boxes)} final avatars")
         
-        # Step 5: Sort by y-coordinate (top to bottom) and convert to results format
+        # Sort by y-coordinate (top to bottom) and convert to results format
         boxes = sorted(boxes, key=lambda b: (b[1], b[0]))
         
         results = []
@@ -1852,7 +2124,7 @@ class CardAvatarDetector:
         # Create or initialize coordinate context if needed
         if return_context and coord_context is None:
             H, W = img.shape[:2]
-            coord_context = WeChatCoordinateContext(image_path, (W, H))
+            coord_context = cWeChatCoordinateContext(image_path, (W, H))
         
         # Populate coordinate context with avatar data if provided
         if coord_context is not None and results:
@@ -1961,18 +2233,18 @@ class CardAvatarDetector:
 
 
 # =============================================================================
-# STEP 4: CARD BOUNDARY DETECTOR - Enhanced_Card_Avatar_Boundaries 
+# PHASE 4: CARD BOUNDARY DETECTOR - Enhanced_Card_Avatar_Boundaries 
 # =============================================================================
 
-class CardBoundaryDetector:
+class cCardBoundaryDetector:
     """
     Card Boundary Detector using avatar-centric approach
     Uses avatar positions to determine message card boundaries
     """
     
     def __init__(self, debug_mode: bool = False):
-        self.avatar_detector = CardAvatarDetector(debug_mode=debug_mode)
-        self.width_detector = SimpleWidthDetector(debug_mode=debug_mode)
+        self.avatar_detector = cCardAvatarDetector(debug_mode=debug_mode)
+        self.width_detector = cBoundaryCoordinator(debug_mode=debug_mode)
         
         # Card boundary parameters
         self.MIN_CARD_HEIGHT = 60       # Minimum height for a card
@@ -1983,23 +2255,33 @@ class CardBoundaryDetector:
         self.VALIDATION_TOLERANCE = 5   # Pixels tolerance for boundary validation
         self.ENABLE_VALIDATION = True   # Enable/disable coordinate validation
         
-    def detect_cards(self, image_path: str, coord_context: 'WeChatCoordinateContext' = None, 
+    def detect_cards(self, image_path: str, coord_context: 'cWeChatCoordinateContext' = None, 
                      return_context: bool = False) -> Tuple[List[Dict], Dict]:
         """
         Detect individual message card boundaries using avatar positions
         
-        Args:
-            image_path: Path to the WeChat screenshot
-            coord_context: Optional WeChatCoordinateContext to populate with results
-            return_context: If True, return ((cards, info), coord_context) instead of (cards, info)
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, with visible message cards)
+        - coord_context: Optional[WeChatCoordinateContext] - Coordinate context for integration
+        - return_context: bool - Whether to return coordinate context with results
         
-        Returns:
-            - If return_context=False: Tuple of (card_results, detection_info)
-            - If return_context=True: ((card_results, detection_info), coord_context)
+        📌 OUTPUT CONTRACT:
+        Standard Mode (return_context=False):
+        - Success: Tuple[List[Dict], Dict] - (card_results, detection_info)
+        - card_results: List of {"id": int, "region": {"bbox": [x,y,w,h], "confidence": float}}
+        - detection_info: {"total_cards": int, "processing_time": float, "method": str}
+        
+        Context Mode (return_context=True):
+        - Success: ((card_results, detection_info), cWeChatCoordinateContext)
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True
+        - Updates coordinate context with card region data
+        - Dependencies: Requires BoundaryCoordinator and CardAvatarDetector results
         """
         print(f"🎯 4. Card Boundary Detection: {os.path.basename(image_path)}")
         
-        # Step 1: Get width boundaries
+        # Get width boundaries
         width_result = self.width_detector.detect_width(image_path)
         if width_result is None:
             print("❌ Width detection failed")
@@ -2008,7 +2290,7 @@ class CardBoundaryDetector:
         left_boundary, right_boundary, width = width_result
         print(f"  📏 Card width: {width}px (left: {left_boundary}, right: {right_boundary})")
         
-        # Step 2: Get complete avatar data (not just positions)
+        # Get complete avatar data (not just positions)
         avatars, avatar_info = self.avatar_detector.detect_avatars(image_path)
         if not avatars:
             print("❌ No avatars detected")
@@ -2016,7 +2298,7 @@ class CardBoundaryDetector:
         
         print(f"  👥 Found {len(avatars)} avatars with complete boundary data")
         
-        # Step 3: Calculate card boundaries using midpoint approach with complete avatar data
+        # Calculate card boundaries using midpoint approach with complete avatar data
         cards = []
         for i, avatar in enumerate(avatars):
             avatar_x, avatar_y = avatar["center"]  # Get center from complete avatar data
@@ -2081,7 +2363,7 @@ class CardBoundaryDetector:
             "enhanced_data": True  # Flag indicating this includes complete avatar boundaries
         }
         
-        # Step 4: Validate coordinates if enabled
+        # Validate coordinates if enabled
         if self.ENABLE_VALIDATION:
             validated_cards, validation_report = self._validate_card_avatar_coordinates(cards)
             detection_info["coordinate_validation"] = validation_report
@@ -2103,7 +2385,7 @@ class CardBoundaryDetector:
             img = cv2.imread(image_path)
             if img is not None:
                 H, W = img.shape[:2]
-                coord_context = WeChatCoordinateContext(image_path, (W, H))
+                coord_context = cWeChatCoordinateContext(image_path, (W, H))
         
         # Populate coordinate context with card data if provided
         if coord_context is not None and cards:
@@ -2314,17 +2596,17 @@ class CardBoundaryDetector:
 
 
 # =============================================================================
-# STEP 5: CONTACT NAME BOUNDARY DETECTOR  
+# PHASE 5: CONTACT NAME BOUNDARY DETECTOR  
 # =============================================================================
 
-class ContactNameBoundaryDetector:
+class cContactNameBoundaryDetector:
     """
     Contact Name Boundary Detector for visual detection of name regions
     Detects white text boundaries above avatar center lines without OCR
     """
     
     def __init__(self, debug_mode: bool = False):
-        self.card_boundary_detector = CardBoundaryDetector(debug_mode=debug_mode)
+        self.card_boundary_detector = cCardBoundaryDetector(debug_mode=debug_mode)
         
         # White text detection parameters (optimized for light gray text)
         self.WHITE_THRESHOLD_MIN = 155      # Minimum brightness for white/light gray text
@@ -2349,25 +2631,35 @@ class ContactNameBoundaryDetector:
         self.MIN_WHITE_PIXEL_RATIO = 0.12   # Minimum ratio of white pixels in region (balanced for names)
         
     def detect_name_boundaries(self, image_path: str, cards_with_times: List[Dict] = None, 
-                             debug_mode: bool = False, coord_context: 'WeChatCoordinateContext' = None,
+                             debug_mode: bool = False, coord_context: 'cWeChatCoordinateContext' = None,
                              return_context: bool = False) -> Tuple[List[Dict], Dict]:
         """
         Detect contact name boundaries using visual detection only, avoiding time conflict areas
         
-        Args:
-            image_path: Path to screenshot image
-            cards_with_times: Optional cards with time box data (for conflict avoidance)
-            debug_mode: Enable comprehensive debug data collection for visualization
-            coord_context: Optional WeChatCoordinateContext to populate with results
-            return_context: If True, return ((cards, info), coord_context) instead of (cards, info)
-            
-        Returns:
-            - If return_context=False: Tuple of (enhanced_cards_with_names, detection_info)
-            - If return_context=True: ((enhanced_cards_with_names, detection_info), coord_context)
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, with visible contact names)
+        - cards_with_times: Optional[List[Dict]] - Pre-detected cards with time box data
+        - debug_mode: bool - Enable comprehensive debug visualization collection
+        - coord_context: Optional[WeChatCoordinateContext] - Coordinate context for integration
+        - return_context: bool - Whether to return coordinate context with results
+        
+        📌 OUTPUT CONTRACT:
+        Standard Mode (return_context=False):
+        - Success: Tuple[List[Dict], Dict] - (enhanced_cards_with_names, detection_info)
+        - enhanced_cards_with_names: List of cards with added contact_name components
+        - detection_info: {"total_names": int, "success_rate": float, "method": "white_text_visual"}
+        
+        Context Mode (return_context=True):
+        - Success: ((enhanced_cards_with_names, detection_info), cWeChatCoordinateContext)
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True or self.debug_mode=True
+        - Updates coordinate context with contact_name component data
+        - Dependencies: Requires card boundary and avatar detection results
         """
         print(f"🎯 5. Contact Name Boundary Detection: {os.path.basename(image_path)}")
         
-        # Step 1: Get card data (use cards_with_times if provided, otherwise detect fresh)
+        # Get card data (use cards_with_times if provided, otherwise detect fresh)
         if cards_with_times:
             cards = cards_with_times
             card_detection_info = {"reused_cards_with_times": True}
@@ -2378,7 +2670,7 @@ class ContactNameBoundaryDetector:
                 print("❌ No cards available for name detection")
                 return [], {}
             
-        # Step 2: Load image for processing
+        # Load image for processing
         img = cv2.imread(image_path)
         if img is None:
             print(f"❌ Failed to load image: {image_path}")
@@ -2386,7 +2678,7 @@ class ContactNameBoundaryDetector:
             
         print(f"  📄 Processing {len(cards)} cards for name boundary detection")
         
-        # Step 3: Initialize comprehensive debug data collection
+        # Initialize comprehensive debug data collection
         debug_data = {
             "original_image": img.copy() if debug_mode else None,
             "image_path": image_path,
@@ -2422,7 +2714,7 @@ class ContactNameBoundaryDetector:
             }
         } if debug_mode else {}
         
-        # Step 4: Process each card for name boundaries
+        # Process each card for name boundaries
         enhanced_cards = []
         total_names_detected = 0
         
@@ -2459,11 +2751,11 @@ class ContactNameBoundaryDetector:
                         "confidence": 0.0
                     }
         
-        # Step 5: Generate statistical analysis for debug data
+        # Generate statistical analysis for debug data
         if debug_mode and debug_data:
             debug_data["statistical_analysis"] = self._generate_statistical_analysis(debug_data, enhanced_cards)
         
-        # Step 6: Generate detection summary with debug data
+        # Generate detection summary with debug data
         detection_info = {
             "total_cards_processed": len(cards),
             "names_detected": total_names_detected,
@@ -2483,7 +2775,7 @@ class ContactNameBoundaryDetector:
             img = cv2.imread(image_path)
             if img is not None:
                 H, W = img.shape[:2]
-                coord_context = WeChatCoordinateContext(image_path, (W, H))
+                coord_context = cWeChatCoordinateContext(image_path, (W, H))
         
         # Populate coordinate context with contact name data if provided
         if coord_context is not None and enhanced_cards:
@@ -2530,7 +2822,7 @@ class ContactNameBoundaryDetector:
             debug_data["processing_steps"].append(f"Processing card {card_id}")
         
         try:
-            # Step 1: Detect the left edge of grey timestamp text as boundary
+            # Detect the left edge of grey timestamp text as boundary
             boundary_x = self._detect_grey_timestamp_left_edge(img, card["bbox"], card["avatar"])
             
             if boundary_x is not None:
@@ -3256,7 +3548,7 @@ class ContactNameBoundaryDetector:
         Returns:
             Path to saved debug visualization image
         """
-        from modules.visualization_engine import DiagnosticVisualizationEngine
+        from modules.visualization_engine import cDiagnosticVisualizationEngine
         
         debug_data = detection_info.get("debug_data")
         if not debug_data:
@@ -3274,7 +3566,7 @@ class ContactNameBoundaryDetector:
         }
         
         # Create visualization engine and generate comprehensive debug image
-        viz_engine = DiagnosticVisualizationEngine()
+        viz_engine = cDiagnosticVisualizationEngine()
         output_path = viz_engine.create_comprehensive_debug_visualization(
             "contact_name", visualization_data
         )
@@ -3389,17 +3681,17 @@ class ContactNameBoundaryDetector:
 
 
 # =============================================================================
-# STEP 6: TIME BOX DETECTOR  
+# PHASE 6: TIME BOX DETECTOR  
 # =============================================================================
 
-class TimeBoxDetector:
+class cTimeBoxDetector:
     """
     Time Box Detector using visual density patterns (non-OCR approach)
     Detects timestamp regions using column projection and statistical analysis
     """
     
     def __init__(self, debug_mode: bool = False):
-        self.card_boundary_detector = CardBoundaryDetector(debug_mode=debug_mode)
+        self.card_boundary_detector = cCardBoundaryDetector(debug_mode=debug_mode)
         
         # WeChat-optimized layout parameters for upper-center time detection
         self.CARD_WIDTH_FRAC = 0.7      # Search up to 70% of card width
@@ -3424,19 +3716,29 @@ class TimeBoxDetector:
         self.K_MAD_TIMESTAMP = 1.0     # Lower threshold for timestamp region analysis
         self.K_MAD_TIMESTAMP_FALLBACK = 0.5  # More aggressive fallback for timestamps
         
-    def detect_time_boundaries(self, image_path: str, coord_context: 'WeChatCoordinateContext' = None,
+    def detect_time_boundaries(self, image_path: str, coord_context: 'cWeChatCoordinateContext' = None,
                                return_context: bool = False) -> Tuple[List[Dict], Dict]:
         """
         Detect timestamp boundaries using visual density patterns
         
-        Args:
-            image_path: Path to screenshot image
-            coord_context: Optional WeChatCoordinateContext to populate with results
-            return_context: If True, return ((cards, info), coord_context) instead of (cards, info)
-            
-        Returns:
-            - If return_context=False: Tuple of (enhanced_cards_with_times, detection_info)
-            - If return_context=True: ((enhanced_cards_with_times, detection_info), coord_context)
+        📌 INPUT CONTRACT:
+        - image_path: str - Path to WeChat screenshot (PNG/JPG, with visible timestamps)
+        - coord_context: Optional[WeChatCoordinateContext] - Coordinate context for integration  
+        - return_context: bool - Whether to return coordinate context with results
+        
+        📌 OUTPUT CONTRACT:
+        Standard Mode (return_context=False):
+        - Success: Tuple[List[Dict], Dict] - (enhanced_cards_with_times, detection_info)
+        - enhanced_cards_with_times: List of cards with added timestamp components
+        - detection_info: {"total_times": int, "success_rate": float, "method": "upper_region_density"}
+        
+        Context Mode (return_context=True):
+        - Success: ((enhanced_cards_with_times, detection_info), cWeChatCoordinateContext)
+        
+        Side Effects:
+        - Generates debug visualization files if debug_mode=True
+        - Updates coordinate context with timestamp component data
+        - Dependencies: Requires card boundary detection results
         """
         print(f"🎯 6. Time Box Detection: {os.path.basename(image_path)}")
         
@@ -3446,7 +3748,7 @@ class TimeBoxDetector:
             print("❌ No cards available for time detection")
             return [], {}
             
-        # Step 2: Load image for processing
+        # Load image for processing
         img = cv2.imread(image_path)
         if img is None:
             print(f"❌ Failed to load image: {image_path}")
@@ -3464,7 +3766,7 @@ class TimeBoxDetector:
         print(f"  📏 Using panel right boundary: {x_panel_right}px")
         print(f"  📄 Processing {len(cards)} cards for time boundary detection")
         
-        # Step 4: Process each card for time boundaries
+        # Process each card for time boundaries
         enhanced_cards = []
         total_times_detected = 0
         
@@ -3499,7 +3801,7 @@ class TimeBoxDetector:
             img = cv2.imread(image_path)
             if img is not None:
                 H, W = img.shape[:2]
-                coord_context = WeChatCoordinateContext(image_path, (W, H))
+                coord_context = cWeChatCoordinateContext(image_path, (W, H))
         
         # Populate coordinate context with timestamp data if provided
         if coord_context is not None and enhanced_cards:
@@ -3544,7 +3846,7 @@ class TimeBoxDetector:
             # Initialize debug info collection if requested
             debug_info = {} if hasattr(self, '_collect_debug') and self._collect_debug else None
             
-            # Step 1: Detect the boundary between name and timestamp regions
+            # Detect the boundary between name and timestamp regions
             boundary_y = self._detect_name_time_horizontal_boundary(img, card_bbox, avatar_data)
             
             if boundary_y is not None:
@@ -4314,12 +4616,12 @@ class TimeBoxDetector:
 # COMPLETE CARD PROCESSING PIPELINE
 # =============================================================================
 
-def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional[Dict]:
+def fcomplete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional[Dict]:
     """
-    Complete 6-step card processing pipeline with proper data flow
+    Complete 6-phase card processing pipeline with proper data flow
     
     Pipeline Order (Fixed):
-    1. SimpleWidthDetector - Detect message card width boundaries
+    1. BoundaryCoordinator - Detect message card width boundaries
     2. RightBoundaryDetector - Enhanced right boundary detection (internal)  
     3. CardAvatarDetector - Detect avatar positions within cards
     4. CardBoundaryDetector - Detect individual card boundaries
@@ -4331,7 +4633,7 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
         debug_mode: Enable debug visualization generation
         
     Returns:
-        Dictionary with complete analysis results from all 6 steps or None if failed
+        Dictionary with complete analysis results from all 6 phases or None if failed
     """
     try:
         print(f"🚀 Starting Complete Card Analysis Pipeline: {os.path.basename(image_path)}")
@@ -4348,60 +4650,60 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
         print(f"📐 Image dimensions: {img_width}×{img_height}")
         
         # Initialize unified coordinate context
-        coord_context = WeChatCoordinateContext(image_path, (img_width, img_height))
+        coord_context = cWeChatCoordinateContext(image_path, (img_width, img_height))
         print("📊 Initialized unified coordinate context")
         
         # Initialize all processors
-        width_detector = SimpleWidthDetector(debug_mode=debug_mode)
-        avatar_detector = CardAvatarDetector(debug_mode=debug_mode) 
-        boundary_detector = CardBoundaryDetector(debug_mode=debug_mode)
-        time_detector = TimeBoxDetector(debug_mode=debug_mode)
-        name_detector = ContactNameBoundaryDetector(debug_mode=debug_mode)
+        width_detector = cBoundaryCoordinator(debug_mode=debug_mode)
+        avatar_detector = cCardAvatarDetector(debug_mode=debug_mode) 
+        boundary_detector = cCardBoundaryDetector(debug_mode=debug_mode)
+        time_detector = cTimeBoxDetector(debug_mode=debug_mode)
+        name_detector = cContactNameBoundaryDetector(debug_mode=debug_mode)
         
         results = {
-            'pipeline_version': '6-step-complete-with-coordinates',
+            'pipeline_version': '6-phase-complete-with-coordinates',
             'image_processed': os.path.basename(image_path),
             'processing_successful': False,
             'coordinate_context': None  # Will be populated at the end
         }
         
         # Step 1: Width Detection
-        print("📏 Step 1: Width Detection")
+        print("📏 Phase 1: Width Detection")
         width_result = width_detector.detect_width(image_path)
         if width_result:
             left, right, width = width_result
-            results['step1_width_detected'] = width
-            results['step1_width_boundaries'] = {'left': left, 'right': right}
+            results['phase1_width_detected'] = width
+            results['phase1_width_boundaries'] = {'left': left, 'right': right}
             
             # Add global conversation area to coordinate context
             conversation_bbox = [left, 0, width, img_height]
             coord_context.add_global_boundary(
                 "conversation_area", 
                 conversation_bbox, 
-                "STEP_1", 
+                "PHASE_1", 
                 0.9
             )
             print(f"  ✅ Width detected: {width}px (left: {left}, right: {right})")
             print(f"  📊 Added global conversation area to coordinate context")
         else:
-            results['step1_width_detected'] = None
-            results['step1_width_boundaries'] = None
+            results['phase1_width_detected'] = None
+            results['phase1_width_boundaries'] = None
             print(f"  ❌ Width detection failed")
             
         # Step 3: Avatar Detection  
-        print("👤 Step 3: Avatar Detection")
+        print("👤 Phase 3: Avatar Detection")
         avatars, avatar_info = avatar_detector.detect_avatars(image_path)
-        results['step3_avatars_detected'] = len(avatars)
-        results['step3_avatar_list'] = avatars
-        results['step3_avatar_detection_info'] = avatar_info
+        results['phase3_avatars_detected'] = len(avatars)
+        results['phase3_avatar_list'] = avatars
+        results['phase3_avatar_detection_info'] = avatar_info
         print(f"  ✅ Avatars detected: {len(avatars)}")
         
         # Step 4: Card Boundary Detection
-        print("📋 Step 4: Card Boundary Detection")
+        print("📋 Phase 4: Card Boundary Detection")
         cards, card_info = boundary_detector.detect_cards(image_path)
-        results['step4_cards_detected'] = len(cards)
-        results['step4_card_list'] = cards  
-        results['step4_card_detection_info'] = card_info
+        results['phase4_cards_detected'] = len(cards)
+        results['phase4_card_list'] = cards  
+        results['phase4_card_detection_info'] = card_info
         
         # Populate coordinate context with card data
         for card in cards:
@@ -4409,7 +4711,7 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
             card_bbox = card["bbox"]
             
             # Add card to coordinate context
-            coord_context.add_card(card_id, card_bbox, "STEP_4", 0.95)
+            coord_context.add_card(card_id, card_bbox, "PHASE_4", 0.95)
             
             # Add avatar component
             if "avatar" in card:
@@ -4427,12 +4729,12 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
         print(f"  ✅ Cards detected: {len(cards)}")
         print(f"  📊 Added {len(cards)} cards to coordinate context")
         
-        # Step 6: Time Box Detection (RUNS BEFORE Step 5)
-        print("🕒 Step 6: Time Box Detection")
+        # Phase 6: Time Box Detection (RUNS BEFORE Phase 5)
+        print("🕒 Phase 6: Time Box Detection")
         cards_with_times, time_info = time_detector.detect_time_boundaries(image_path)
-        results['step6_times_detected'] = len([c for c in cards_with_times if 'time_box' in c])
-        results['step6_cards_with_times'] = cards_with_times
-        results['step6_time_detection_info'] = time_info
+        results['phase6_times_detected'] = len([c for c in cards_with_times if 'time_box' in c])
+        results['phase6_cards_with_times'] = cards_with_times
+        results['phase6_time_detection_info'] = time_info
         
         # Add timestamp components to coordinate context
         for card in cards_with_times:
@@ -4442,26 +4744,26 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
                 time_bbox = time_data["bbox"]
                 
                 coord_context.add_component(
-                    card_id, "timestamp", time_bbox, "STEP_6", 
+                    card_id, "timestamp", time_bbox, "PHASE_6", 
                     time_data.get("density_score", 0.8),
                     ocr_suitable=True, expected_content="timestamp",
                     density_score=time_data.get("density_score", 0.8),
                     detection_method=time_data.get("detection_method", "upper_region_density")
                 )
         
-        print(f"  ✅ Times detected: {results['step6_times_detected']}/{len(cards_with_times)}")
-        print(f"  📊 Added {results['step6_times_detected']} timestamp regions to coordinate context")
+        print(f"  ✅ Times detected: {results['phase6_times_detected']}/{len(cards_with_times)}")
+        print(f"  📊 Added {results['phase6_times_detected']} timestamp regions to coordinate context")
         
-        # Step 5: Contact Name Detection (USES time data from Step 6)
-        print("📝 Step 5: Contact Name Detection")
+        # Phase 5: Contact Name Detection (USES time data from Phase 6)
+        print("📝 Phase 5: Contact Name Detection")
         cards_with_names, name_info = name_detector.detect_name_boundaries(
             image_path, 
-            cards_with_times=cards_with_times,  # Use Step 6 output as input
+            cards_with_times=cards_with_times,  # Use Phase 6 output as input
             debug_mode=debug_mode
         )
-        results['step5_names_detected'] = len([c for c in cards_with_names if 'name_boundary' in c])
-        results['step5_cards_with_names'] = cards_with_names
-        results['step5_name_detection_info'] = name_info
+        results['phase5_names_detected'] = len([c for c in cards_with_names if 'name_boundary' in c])
+        results['phase5_cards_with_names'] = cards_with_names
+        results['phase5_name_detection_info'] = name_info
         
         # Add contact name components to coordinate context
         for card in cards_with_names:
@@ -4477,8 +4779,8 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
                     detection_method=name_data.get("detection_method", "grey_timestamp_edge")
                 )
         
-        print(f"  ✅ Names detected: {results['step5_names_detected']}/{len(cards_with_names)}")
-        print(f"  📊 Added {results['step5_names_detected']} contact name regions to coordinate context")
+        print(f"  ✅ Names detected: {results['phase5_names_detected']}/{len(cards_with_names)}")
+        print(f"  📊 Added {results['phase5_names_detected']} contact name regions to coordinate context")
         
         # Validate coordinate context
         validation_result = coord_context.validate_coordinates()
@@ -4509,11 +4811,11 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
         
         print("=" * 80)
         print("🎯 Pipeline Summary:")
-        print(f"  Step 1 - Width: {results['step1_width_detected']}px" if results['step1_width_detected'] else "  Step 1 - Width: Failed")
-        print(f"  Step 3 - Avatars: {results['step3_avatars_detected']}")
-        print(f"  Step 4 - Cards: {results['step4_cards_detected']}")
-        print(f"  Step 6 - Times: {results['step6_times_detected']}/{len(cards_with_times)}")
-        print(f"  Step 5 - Names: {results['step5_names_detected']}/{len(cards_with_names)}")
+        print(f"  Phase 1 - Width: {results['phase1_width_detected']}px" if results['phase1_width_detected'] else "  Phase 1 - Width: Failed")
+        print(f"  Phase 3 - Avatars: {results['phase3_avatars_detected']}")
+        print(f"  Phase 4 - Cards: {results['phase4_cards_detected']}")
+        print(f"  Phase 6 - Times: {results['phase6_times_detected']}/{len(cards_with_times)}")
+        print(f"  Phase 5 - Names: {results['phase5_names_detected']}/{len(cards_with_names)}")
         print("📊 Coordinate Context Summary:")
         print(f"  Total Cards: {coord_context.get_card_count()}")
         print(f"  OCR Regions: {results['ocr_regions']['total_regions']} (Names: {len(results['ocr_regions']['contact_names'])}, Times: {len(results['ocr_regions']['timestamps'])})")
@@ -4535,10 +4837,10 @@ def complete_card_analysis(image_path: str, debug_mode: bool = True) -> Optional
 
 # Import screenshot processing functions from screenshot_processor module
 if MODULAR_IMPORTS_AVAILABLE:
-    capture_and_process_screenshot = screenshot_processor.capture_and_process_screenshot
-    process_screenshot_file = screenshot_processor.process_screenshot_file
-    process_current_wechat_window = screenshot_processor.process_current_wechat_window
-    get_live_card_analysis = screenshot_processor.get_live_card_analysis
+    capture_and_process_screenshot = screenshot_processor.fcapture_and_process_screenshot
+    process_screenshot_file = screenshot_processor.fprocess_screenshot_file
+    process_current_wechat_window = screenshot_processor.fprocess_current_wechat_window
+    get_live_card_analysis = screenshot_processor.fget_live_card_analysis
 else:
     # Legacy inline implementations for backward compatibility
     def capture_and_process_screenshot(output_dir: str = "pic/screenshots", 
@@ -4567,8 +4869,8 @@ else:
             print("=" * 50)
             
             # Step 1: Capture fresh screenshot
-            print("\n📸 Step 1: Capturing WeChat screenshot...")
-            screenshot_path = capture_screenshot(output_dir=output_dir, filename=custom_filename)
+            print("\n📸 Phase 1: Capturing WeChat screenshot...")
+            screenshot_path = fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
             
             if not screenshot_path:
                 print("❌ Failed to capture screenshot")
@@ -4577,7 +4879,7 @@ else:
             print(f"✅ Screenshot captured: {os.path.basename(screenshot_path)}")
             
             # Step 2: Process with card analysis
-            print("\n🔍 Step 2: Processing card analysis...")
+            print("\n🔍 Phase 2: Processing card analysis...")
             results = process_screenshot_file(screenshot_path)
             
             if results:
@@ -4596,16 +4898,16 @@ else:
 
     def process_screenshot_file(image_path: str) -> Optional[Dict]:
         """
-        Process a screenshot file using complete 6-step pipeline
+        Process a screenshot file using complete 6-phase pipeline
         
         Args:
             image_path: Path to screenshot file to analyze
             
         Returns:
-            Dictionary with complete analysis results from all 6 steps or None if failed
+            Dictionary with complete analysis results from all 6 phases or None if failed
         """
         # Use the complete pipeline with debug_mode=False for production processing
-        return complete_card_analysis(image_path, debug_mode=False)
+        return fcomplete_card_analysis(image_path, debug_mode=False)
 
     def process_current_wechat_window() -> Optional[Dict]:
         """
@@ -4646,9 +4948,9 @@ else:
         if include_visualizations:
             try:
                 # Generate all visualizations (debug_mode=False for internal processing)
-                width_detector = SimpleWidthDetector(debug_mode=False)  
-                avatar_detector = CardAvatarDetector(debug_mode=False)
-                boundary_detector = CardBoundaryDetector(debug_mode=False)
+                width_detector = cBoundaryCoordinator(debug_mode=False)  
+                avatar_detector = cCardAvatarDetector(debug_mode=False)
+                boundary_detector = cCardBoundaryDetector(debug_mode=False)
                 
                 # Width visualization
                 if analysis.get('width_detected'):
@@ -4671,6 +4973,105 @@ else:
         return analysis, visualization_paths
 
 
+def f_save_coordinates_to_context(image_path: str, analysis_results: Dict) -> None:
+    """
+    Save coordinate analysis results to modules/wechat_ctx.json for software assistance and human inspection
+    
+    Args:
+        image_path: Path to the processed screenshot
+        analysis_results: Complete analysis results from the 6-phase pipeline
+    """
+    try:
+        import json
+        import os
+        from datetime import datetime
+        
+        # Create context file path in the modules directory
+        context_file = os.path.join(os.path.dirname(__file__), 'wechat_ctx.json')
+        
+        # Extract coordinate context if available
+        coord_context = analysis_results.get('coordinate_context', {})
+        image_metadata = coord_context.get('image_metadata', {})
+        global_boundaries = coord_context.get('global_boundaries', {})
+        cards_data = coord_context.get('cards', [])
+        ocr_regions = coord_context.get('ocr_extraction_regions', {})
+        
+        # Extract image dimensions
+        dimensions = image_metadata.get('dimensions', {})
+        
+        # Extract conversation area from global boundaries
+        conversation_area = global_boundaries.get('conversation_area', {})
+        conversation_bbox = conversation_area.get('bbox', [0, 0, 0, 0])
+        
+        # Build context data structure
+        context_data = {
+            "last_updated": datetime.now().isoformat(),
+            "screenshot_path": os.path.basename(image_path),
+            "processing_info": {
+                "source_image": image_metadata.get('source_image', ''),
+                "full_path": image_metadata.get('full_path', ''),
+                "processing_timestamp": image_metadata.get('processing_timestamp', '')
+            },
+            "image_dimensions": {
+                "width": dimensions.get('width'),
+                "height": dimensions.get('height')
+            },
+            "detection_statistics": {
+                "cards_detected": len(cards_data),
+                "avatars_detected": len([card for card in cards_data if 'avatar' in card.get('components', {})]),
+                "names_detected": len(ocr_regions.get('contact_names', [])),
+                "times_detected": len(ocr_regions.get('timestamps', []))
+            },
+            "coordinates": {
+                "conversation_area": {
+                    "x": conversation_bbox[0] if len(conversation_bbox) >= 4 else None,
+                    "y": conversation_bbox[1] if len(conversation_bbox) >= 4 else None,
+                    "width": conversation_bbox[2] if len(conversation_bbox) >= 4 else None,
+                    "height": conversation_bbox[3] if len(conversation_bbox) >= 4 else None,
+                    "confidence": conversation_area.get('confidence')
+                },
+                "cards": [
+                    {
+                        "id": card.get('card_id', i + 1),
+                        "region": {
+                            "x": card.get('card_region', {}).get('bbox', [0, 0, 0, 0])[0],
+                            "y": card.get('card_region', {}).get('bbox', [0, 0, 0, 0])[1],
+                            "width": card.get('card_region', {}).get('bbox', [0, 0, 0, 0])[2],
+                            "height": card.get('card_region', {}).get('bbox', [0, 0, 0, 0])[3],
+                            "confidence": card.get('card_region', {}).get('confidence')
+                        },
+                        "components": {
+                            "has_avatar": 'avatar' in card.get('components', {}),
+                            "avatar": card.get('components', {}).get('avatar', {}),
+                            "has_name": 'contact_name' in card.get('components', {}),
+                            "contact_name": card.get('components', {}).get('contact_name', {}),
+                            "has_time": 'timestamp' in card.get('components', {}),
+                            "timestamp": card.get('components', {}).get('timestamp', {})
+                        }
+                    }
+                    for i, card in enumerate(cards_data)
+                ],
+                "ocr_regions": {
+                    "contact_names": ocr_regions.get('contact_names', []),
+                    "timestamps": ocr_regions.get('timestamps', []),
+                    "messages": ocr_regions.get('messages', []),
+                    "avatars": ocr_regions.get('avatars', [])
+                }
+            }
+        }
+        
+        # Save to JSON file (overwrites previous data)
+        with open(context_file, 'w', encoding='utf-8') as f:
+            json.dump(context_data, f, indent=2, ensure_ascii=False)
+            
+        print(f"💾 Coordinates saved to modules/wechat_ctx.json")
+        
+    except Exception as e:
+        print(f"⚠️  Failed to save coordinates to context file: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 # =============================================================================
 # MAIN DEMO SECTION
 # =============================================================================
@@ -4684,7 +5085,7 @@ if __name__ == "__main__":
         print("\n📸 LIVE WECHAT SCREENSHOT & CARD PROCESSING")
         print("=" * 50)
         
-        print("\n📸 Step 1: Capturing fresh WeChat screenshot...")
+        print("\n📸 Phase 1: Capturing fresh WeChat screenshot...")
         result = capture_and_process_screenshot()
         
         if result:
@@ -4696,10 +5097,10 @@ if __name__ == "__main__":
             print(f"   Cards: {analysis.get('cards_detected')}")
             
             # Generate single comprehensive visualization (instead of multiple separate ones)
-            print(f"\n🎨 Step 2: Generating consolidated debug visualization...")
+            print(f"\n🎨 Phase 2: Generating consolidated debug visualization...")
             try:
                 # Initialize one detector with debug mode for comprehensive visualization
-                debug_width_detector = SimpleWidthDetector(debug_mode=True)
+                debug_width_detector = cBoundaryCoordinator(debug_mode=True)
                 
                 viz_results = {}
                 
@@ -4713,7 +5114,7 @@ if __name__ == "__main__":
                 
                 # Generate Card Avatar Detector visualization (Section 3)
                 if analysis.get('avatars_detected'):
-                    debug_avatar_detector = CardAvatarDetector(debug_mode=True)
+                    debug_avatar_detector = cCardAvatarDetector(debug_mode=True)
                     avatar_viz = debug_avatar_detector.create_visualization(screenshot_path)
                     if avatar_viz:
                         viz_results['avatar_detection'] = avatar_viz
@@ -4722,7 +5123,7 @@ if __name__ == "__main__":
                 
                 # Generate Card Boundary Detector visualization (Section 4)
                 if analysis.get('cards_detected'):
-                    debug_card_detector = CardBoundaryDetector(debug_mode=True)
+                    debug_card_detector = cCardBoundaryDetector(debug_mode=True)
                     card_viz = debug_card_detector.create_card_visualization(screenshot_path)
                     if card_viz:
                         viz_results['card_boundaries'] = card_viz
@@ -4731,7 +5132,7 @@ if __name__ == "__main__":
                 
                 # Generate Contact Name Boundary Detector visualization (Section 5)
                 if analysis.get('names_detected') is not None:
-                    debug_name_detector = ContactNameBoundaryDetector(debug_mode=True)
+                    debug_name_detector = cContactNameBoundaryDetector(debug_mode=True)
                     name_viz = debug_name_detector.create_name_boundary_visualization(screenshot_path)
                     if name_viz:
                         viz_results['name_boundaries'] = name_viz
@@ -4762,7 +5163,7 @@ if __name__ == "__main__":
             print("❌ Live capture failed. Trying to process latest available screenshot...")
             
             # Fallback: Try to find and process the latest screenshot
-            width_detector = SimpleWidthDetector(debug_mode=False)
+            width_detector = cBoundaryCoordinator(debug_mode=False)
             latest_screenshot = width_detector.get_latest_screenshot()
             
             if latest_screenshot:
@@ -4792,7 +5193,7 @@ if __name__ == "__main__":
         print("💡 Required dependencies: pyautogui, Quartz (macOS), easyocr")
         
         # Try to process existing screenshots as fallback
-        width_detector = SimpleWidthDetector(debug_mode=False)
+        width_detector = cBoundaryCoordinator(debug_mode=False)
         latest_screenshot = width_detector.get_latest_screenshot()
         
         if latest_screenshot:

@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 import hashlib
 
-class TextChangeMonitor:
+class cTextChangeMonitor:
     def __init__(self):
         """Initialize the text change monitor"""
         self.ocr_reader = easyocr.Reader(['ch_sim', 'en'], gpu=True)
@@ -130,9 +130,9 @@ class TextChangeMonitor:
             return None
 
 # Global monitor instance
-text_monitor = TextChangeMonitor()
+text_monitor = cTextChangeMonitor()
 
-def detect_new_message_by_text_change(screenshot_path):
+def fdetect_new_message_by_text_change(screenshot_path):
     """
     Alternative detection method using text changes in contact list
     Returns: (x, y) if new message detected for Rio_Old, (None, None) otherwise

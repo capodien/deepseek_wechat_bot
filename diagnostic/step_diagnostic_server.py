@@ -31,11 +31,11 @@ sys.path.insert(0, current_dir)
 
 # Import our new modules
 try:
-    from modules.m_ScreenShot_WeChatWindow import WeChatScreenshotCapture
+    from modules.m_ScreenShot_WeChatWindow import ccWeChatScreenshotCapture
     from WorkingOn.m_OCRZone_MessageCards import OCRZoneMessageCards
-    from modules.m_Card_Processing import SimpleWidthDetector, CardBoundaryDetector
+    from modules.m_Card_Processing import cBoundaryCoordinator, cCardBoundaryDetector
     from TestRun.opencv_adaptive_detector import OpenCVAdaptiveDetector
-    from modules.timestamp_detector import TimestampDetector
+    from modules.timestamp_detector import cTimestampDetector
     print("✅ Successfully imported basic modules")
     
     # Try to import optional modules
@@ -95,7 +95,7 @@ def get_screenshot_capturer():
     """Get global screenshot capturer instance"""
     global screenshot_capturer
     if screenshot_capturer is None:
-        screenshot_capturer = WeChatScreenshotCapture()
+        screenshot_capturer = cWeChatScreenshotCapture()
     return screenshot_capturer
 
 def get_message_detector():
@@ -143,7 +143,7 @@ def test_screenshot():
         # Step 2: Capture screenshot
         print("  📸 Capturing screenshot...")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot_path = capturer.capture_screenshot(f"diagnostic_test_{timestamp}.png")
+        screenshot_path = capturer.fcapture_screenshot(f"diagnostic_test_{timestamp}.png")
         
         if not screenshot_path:
             return jsonify({
@@ -174,7 +174,7 @@ def test_screenshot():
             'validation_passed': validation_passed,
             'detection_time': detection_time,
             'method_info': {
-                'method_name': 'WeChatScreenshotCapture',
+                'method_name': 'cWeChatScreenshotCapture',
                 'module_path': 'modules/m_ScreenShot_WeChatWindow.py',
                 'technique': 'Cross-platform GUI automation with window detection',
                 'parameters': 'pyautogui + platform detection (macOS/Windows)',
@@ -249,22 +249,22 @@ def test_module_capture_messages():
         })
 
 @app.route('/api/test-module-capture-screenshot', methods=['POST'])
-def test_module_capture_screenshot():
-    """Test m_ScreenShot_WeChatWindow: capture_screenshot() function"""
+def test_module_fcapture_screenshot():
+    """Test m_ScreenShot_WeChatWindow: fcapture_screenshot() function"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import capture_screenshot
+        from modules.m_ScreenShot_WeChatWindow import ffcapture_screenshot
         
-        print("🔍 Testing capture_screenshot() function...")
+        print("🔍 Testing ffcapture_screenshot() function...")
         start_time = time.time()
         
         # Test with default parameters
         print("  📸 Testing with default parameters...")
-        result1 = capture_screenshot()
+        result1 = ffcapture_screenshot()
         
         # Test with custom parameters
         print("  ⚙️ Testing with custom filename...")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result2 = capture_screenshot(
+        result2 = ffcapture_screenshot(
             output_dir="pic/screenshots",
             filename=f"{timestamp}_WeChat_API_Test.png",
             detect_window=True
@@ -274,7 +274,7 @@ def test_module_capture_screenshot():
         
         return jsonify({
             'success': True,
-            'function_name': 'capture_screenshot',
+            'function_name': 'ffcapture_screenshot',
             'test_results': {
                 'default_params': {
                     'result': result1,
@@ -297,23 +297,23 @@ def test_module_capture_screenshot():
     except Exception as e:
         return jsonify({
             'success': False,
-            'function_name': 'capture_screenshot',
+            'function_name': 'ffcapture_screenshot',
             'error': str(e),
             'duration_ms': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
         })
 
 @app.route('/api/test-module-class-direct', methods=['POST'])
 def test_module_class_direct():
-    """Test m_ScreenShot_WeChatWindow: WeChatScreenshotCapture class directly"""
+    """Test m_ScreenShot_WeChatWindow: cWeChatScreenshotCapture class directly"""
     try:
-        from modules.m_ScreenShot_WeChatWindow import WeChatScreenshotCapture
+        from modules.m_ScreenShot_WeChatWindow import ccWeChatScreenshotCapture
         
-        print("🔍 Testing WeChatScreenshotCapture class directly...")
+        print("🔍 Testing cWeChatScreenshotCapture class directly...")
         start_time = time.time()
         
         # Test class instantiation
-        print("  🏗️ Creating WeChatScreenshotCapture instance...")
-        capturer = WeChatScreenshotCapture("pic/screenshots")
+        print("  🏗️ Creating cWeChatScreenshotCapture instance...")
+        capturer = cWeChatScreenshotCapture("pic/screenshots")
         
         # Test window detection
         print("  📍 Testing window detection...")
@@ -322,13 +322,13 @@ def test_module_class_direct():
         # Test screenshot capture
         print("  📸 Testing screenshot capture...")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot = capturer.capture_screenshot(f"{timestamp}_WeChat_Class_Test.png")
+        screenshot = capturer.fcapture_screenshot(f"{timestamp}_WeChat_Class_Test.png")
         
         duration = int((time.time() - start_time) * 1000)
         
         return jsonify({
             'success': True,
-            'function_name': 'WeChatScreenshotCapture',
+            'function_name': 'cWeChatScreenshotCapture',
             'test_results': {
                 'class_creation': {'success': True},
                 'window_detection': {
@@ -347,7 +347,7 @@ def test_module_class_direct():
     except Exception as e:
         return jsonify({
             'success': False,
-            'function_name': 'WeChatScreenshotCapture',
+            'function_name': 'cWeChatScreenshotCapture',
             'error': str(e),
             'duration_ms': int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
         })
@@ -358,8 +358,8 @@ def test_module_all_functions():
     try:
         from modules.m_ScreenShot_WeChatWindow import (
             capture_messages_screenshot, 
-            capture_screenshot, 
-            WeChatScreenshotCapture
+            fcapture_screenshot, 
+            cWeChatScreenshotCapture
         )
         
         print("🔍 Comprehensive module test - all functions...")
@@ -384,33 +384,33 @@ def test_module_all_functions():
                 'error': str(e)
             })
         
-        # Test 2: capture_screenshot
-        print("  2️⃣ Testing capture_screenshot()...")
+        # Test 2: fcapture_screenshot
+        print("  2️⃣ Testing fcapture_screenshot()...")
         try:
-            result2 = capture_screenshot()
+            result2 = fcapture_screenshot()
             results['tests'].append({
-                'function': 'capture_screenshot',
+                'function': 'fcapture_screenshot',
                 'success': bool(result2),
                 'result': result2,
                 'error': None
             })
         except Exception as e:
             results['tests'].append({
-                'function': 'capture_screenshot',
+                'function': 'fcapture_screenshot',
                 'success': False,
                 'result': None,
                 'error': str(e)
             })
         
-        # Test 3: WeChatScreenshotCapture class
-        print("  3️⃣ Testing WeChatScreenshotCapture class...")
+        # Test 3: cWeChatScreenshotCapture class
+        print("  3️⃣ Testing cWeChatScreenshotCapture class...")
         try:
-            capturer = WeChatScreenshotCapture()
+            capturer = cWeChatScreenshotCapture()
             coords = capturer.detect_wechat_window()
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            result3 = capturer.capture_screenshot(f"{timestamp}_WeChat_Comprehensive_Test.png")
+            result3 = capturer.fcapture_screenshot(f"{timestamp}_WeChat_Comprehensive_Test.png")
             results['tests'].append({
-                'function': 'WeChatScreenshotCapture',
+                'function': 'cWeChatScreenshotCapture',
                 'success': bool(result3),
                 'result': result3,
                 'coordinates': coords,
@@ -418,7 +418,7 @@ def test_module_all_functions():
             })
         except Exception as e:
             results['tests'].append({
-                'function': 'WeChatScreenshotCapture',
+                'function': 'cWeChatScreenshotCapture',
                 'success': False,
                 'result': None,
                 'coordinates': None,
@@ -1915,7 +1915,7 @@ def test_ocr_zones_comprehensive():
         # Step 1: Capture screenshot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         capturer = get_screenshot_capturer()
-        screenshot_path = capturer.capture_screenshot(filename=f"{timestamp}_WeChat_Comprehensive_OCRZone.png")
+        screenshot_path = capturer.fcapture_screenshot(filename=f"{timestamp}_WeChat_Comprehensive_OCRZone.png")
         
         if not screenshot_path or not os.path.exists(screenshot_path):
             return jsonify({
@@ -2497,7 +2497,7 @@ def test_width_only():
             })
         
         # Create simple width detector
-        width_detector = SimpleWidthDetector()
+        width_detector = BoundaryCoordinator()
         
         # Detect width only
         detection_result = width_detector.detect_width(screenshot_path)
@@ -2530,7 +2530,7 @@ def test_width_only():
             },
             'method_info': {
                 'module_path': 'modules/simple_width_detector.py',
-                'class': 'SimpleWidthDetector',
+                'class': 'BoundaryCoordinator',
                 'technique': 'Canny edge detection + vertical projection analysis',
                 'output': 'Single width value in pixels'
             }

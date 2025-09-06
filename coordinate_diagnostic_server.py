@@ -238,9 +238,9 @@ def system_status():
                 "card_processing_module": CARD_PROCESSING_AVAILABLE,
                 "coordinate_context_class": False,
                 "detector_classes": {
-                    "SimpleWidthDetector": False,
+                    "cBoundaryCoordinator": False,
                     "CardAvatarDetector": False, 
-                    "CardBoundaryDetector": False,
+                    "cCardBoundaryDetector": False,
                     "ContactNameBoundaryDetector": False,
                     "TimeBoxDetector": False
                 }
@@ -257,8 +257,8 @@ def system_status():
             
             # Test detector classes
             try:
-                detector = m_Card_Processing.SimpleWidthDetector()
-                status["components"]["detector_classes"]["SimpleWidthDetector"] = True
+                detector = m_Card_Processing.cBoundaryCoordinator()
+                status["components"]["detector_classes"]["cBoundaryCoordinator"] = True
             except:
                 pass
                 
@@ -269,8 +269,8 @@ def system_status():
                 pass
                 
             try:
-                detector = m_Card_Processing.CardBoundaryDetector()
-                status["components"]["detector_classes"]["CardBoundaryDetector"] = True
+                detector = m_Card_Processing.cCardBoundaryDetector()
+                status["components"]["detector_classes"]["cCardBoundaryDetector"] = True
             except:
                 pass
                 
@@ -382,19 +382,19 @@ def test_detector_integration():
             "detector_tests": {}
         }
         
-        # Test SimpleWidthDetector with coordinate context
+        # Test cBoundaryCoordinator with coordinate context
         try:
-            detector = m_Card_Processing.SimpleWidthDetector()
+            detector = m_Card_Processing.cBoundaryCoordinator()
             width_result, coord_context = detector.detect_width(test_image, return_context=True)
             
-            results["detector_tests"]["SimpleWidthDetector"] = {
+            results["detector_tests"]["cBoundaryCoordinator"] = {
                 "success": width_result is not None,
                 "width_detected": width_result,
                 "coordinate_context_created": coord_context is not None,
                 "global_boundaries": len(coord_context.context["global_boundaries"]) if coord_context else 0
             }
         except Exception as e:
-            results["detector_tests"]["SimpleWidthDetector"] = {
+            results["detector_tests"]["cBoundaryCoordinator"] = {
                 "success": False,
                 "error": str(e)
             }
@@ -466,11 +466,11 @@ def test_full_pipeline():
             "timestamp": datetime.now().isoformat(),
             "test_image": os.path.basename(test_image),
             "processing_results": {
-                "width_detected": results.get("step1_width_detected"),
-                "avatars_detected": results.get("step3_avatars_detected"),
-                "cards_detected": results.get("step4_cards_detected"),
-                "names_detected": results.get("step5_names_detected"),
-                "times_detected": results.get("step6_times_detected")
+                "width_detected": results.get("phase1_width_detected"),
+                "avatars_detected": results.get("phase3_avatars_detected"),
+                "cards_detected": results.get("phase4_cards_detected"),
+                "names_detected": results.get("phase5_names_detected"),
+                "times_detected": results.get("phase6_times_detected")
             },
             "coordinate_system": {
                 "context_created": results.get("coordinate_context") is not None,

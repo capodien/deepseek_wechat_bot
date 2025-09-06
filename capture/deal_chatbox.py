@@ -6,7 +6,7 @@ from pprint import pprint
 import pyautogui
 
 from Constants import Constants
-from .window_manager import get_window_manager
+from .window_manager import fget_window_manager
 
 # 电脑版微信全屏状态的窗口区域（保持向后兼容）
 WECHAT_WINDOW = Constants.WECHAT_WINDOW
@@ -14,7 +14,7 @@ import easyocr
 OCR_READER = easyocr.Reader(['ch_sim', 'en'], gpu=True)  # 添加gpu=True参数启用GPU加速
 
 
-def extract_text_by_color_flow(image,target_color , tolerance=1):
+def fextract_text_by_color_flow(image,target_color , tolerance=1):
     """
     修改说明：
     1. 增加区域垂直位置判断逻辑
@@ -56,7 +56,7 @@ MIN_Y = 43  # 垂直方向最小检测起点
 ROI_HEIGHT = 800  # 感兴趣区域高度
 
 
-def recognize_green_bottom(image_path):
+def frecognize_green_bottom(image_path):
     """
     性能优化版绿色区域底部检测
     返回：最下方绿色区域的底部Y坐标（全局坐标系），未检测到返回None
@@ -105,12 +105,12 @@ def recognize_green_bottom(image_path):
 # 内存缓存优化（减少磁盘IO）
 from io import BytesIO
 
-def get_message_area_screenshot_bytes(use_dynamic_detection=True):
+def fget_message_area_screenshot_bytes(use_dynamic_detection=True):
     """获取消息区域截图并返回BytesIO对象"""
     # 使用动态窗口检测获取当前窗口坐标
     if use_dynamic_detection:
         try:
-            window_manager = get_window_manager(use_dynamic=True)
+            window_manager = fget_window_manager(use_dynamic=True)
             window_coords = window_manager.get_wechat_window()
             
             # 基于动态窗口计算消息区域
@@ -145,12 +145,12 @@ def get_message_area_screenshot_bytes(use_dynamic_detection=True):
     img_byte_arr.seek(0)
     return img_byte_arr
 
-def get_message_area_screenshot(use_dynamic_detection=True):
+def fget_message_area_screenshot(use_dynamic_detection=True):
     """获取消息区域截图，支持动态窗口检测"""
     # 使用动态窗口检测获取当前窗口坐标
     if use_dynamic_detection:
         try:
-            window_manager = get_window_manager(use_dynamic=True)
+            window_manager = fget_window_manager(use_dynamic=True)
             window_coords = window_manager.get_wechat_window()
             
             # 基于动态窗口计算消息区域
@@ -191,7 +191,7 @@ def get_message_area_screenshot(use_dynamic_detection=True):
     screenshot.save(screenshot_path)
     return screenshot_path
 
-def preprocess_for_ocr(image):
+def fpreprocess_for_ocr(image):
     """OCR预处理管道"""
     # 灰度化
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -205,7 +205,7 @@ def preprocess_for_ocr(image):
 
 
 
-def detect_wechat_theme(image):
+def fdetect_wechat_theme(image):
     """
     检测微信主题模式（深色/浅色）
     Returns: 'dark' or 'light'
@@ -237,7 +237,7 @@ def detect_wechat_theme(image):
     print(f"🎨 检测到主题: {theme} 模式 (亮度: {avg_brightness:.1f})")
     return theme
 
-def get_theme_colors(theme):
+def fget_theme_colors(theme):
     """根据主题返回消息气泡颜色"""
     if theme == 'dark':
         # 深色模式颜色
@@ -259,7 +259,7 @@ def get_theme_colors(theme):
     
     return incoming_colors, outgoing_color
 
-def extract_messages_by_theme(image, theme='light', tolerance=30):
+def fextract_messages_by_theme(image, theme='light', tolerance=30):
     """
     根据微信主题提取消息区域
     Returns: (incoming_regions, outgoing_regions)
@@ -279,7 +279,7 @@ def extract_messages_by_theme(image, theme='light', tolerance=30):
     
     return incoming_regions, outgoing_regions
 
-def find_color_regions(image, target_color, tolerance=30):
+def ffind_color_regions(image, target_color, tolerance=30):
     """
     在图像中查找特定颜色的区域
     Returns: list of (x, y, w, h) bounding boxes
@@ -305,7 +305,7 @@ def find_color_regions(image, target_color, tolerance=30):
     
     return regions
 
-def get_chat_messages(screenshot_path):
+def fget_chat_messages(screenshot_path):
     """捕获并解析微信消息（支持深色/浅色模式）"""
     total_start = time.time()
     time_stats = {

@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.gridspec import GridSpec
 
-class DiagnosticStyling:
+class cDiagnosticStyling:
     """Centralized styling constants for consistent visualization"""
     
     # Color Schemes
@@ -78,7 +78,7 @@ class DiagnosticStyling:
         'bbox_tight': True
     }
 
-class LayoutTemplates:
+class cLayoutTemplates:
     """Pre-configured layout templates for different visualization types"""
     
     @staticmethod
@@ -95,8 +95,8 @@ class LayoutTemplates:
             Dictionary of axis objects with descriptive keys
         """
         gs = GridSpec(4, 6, figure=fig, 
-                     hspace=DiagnosticStyling.LAYOUT['spacing']['hspace'],
-                     wspace=DiagnosticStyling.LAYOUT['spacing']['wspace'])
+                     hspace=cDiagnosticStyling.LAYOUT['spacing']['hspace'],
+                     wspace=cDiagnosticStyling.LAYOUT['spacing']['wspace'])
         
         axes = {}
         
@@ -129,13 +129,13 @@ class LayoutTemplates:
     def comparison_layout(fig: plt.Figure) -> Dict[str, plt.Axes]:
         """Create before/after comparison layout"""
         gs = GridSpec(1, 2, figure=fig,
-                     wspace=DiagnosticStyling.LAYOUT['spacing']['wspace'])
+                     wspace=cDiagnosticStyling.LAYOUT['spacing']['wspace'])
         return {
             'before': fig.add_subplot(gs[0, 0]),
             'after': fig.add_subplot(gs[0, 1])
         }
 
-class VisualizationComponents:
+class cVisualizationComponents:
     """Reusable visualization components"""
     
     @staticmethod
@@ -150,7 +150,7 @@ class VisualizationComponents:
             card_index: Card number for labeling
             success: Whether detection was successful (affects color coding)
         """
-        colors = DiagnosticStyling.COLORS
+        colors = cDiagnosticStyling.COLORS
         
         # Extract card and avatar data
         card_bbox = card_data["bbox"]  # (x, y, w, h)
@@ -185,7 +185,7 @@ class VisualizationComponents:
         status_symbol = '✅' if success else '❌'
         
         ax.text(card_bbox[0] + 5, card_bbox[1] + 20, f'{status_symbol} Card {card_index}',
-                fontsize=DiagnosticStyling.FONTS['label_medium']['size'],
+                fontsize=cDiagnosticStyling.FONTS['label_medium']['size'],
                 color='white', fontweight='bold',
                 bbox=dict(boxstyle="round,pad=0.3", facecolor=status_color, alpha=0.8))
     
@@ -193,7 +193,7 @@ class VisualizationComponents:
     def draw_search_region(ax: plt.Axes, region_bbox: Tuple[int, int, int, int],
                           success: bool = True, alpha: float = 0.3) -> None:
         """Draw search region overlay with appropriate color coding"""
-        colors = DiagnosticStyling.COLORS
+        colors = cDiagnosticStyling.COLORS
         color = colors['success'] if success else colors['failure']
         
         search_rect = patches.Rectangle(
@@ -206,7 +206,7 @@ class VisualizationComponents:
     @staticmethod
     def create_detection_legend(ax: plt.Axes, detector_type: str) -> None:
         """Create standardized legend for detection visualizations"""
-        colors = DiagnosticStyling.COLORS
+        colors = cDiagnosticStyling.COLORS
         
         legend_elements = [
             patches.Patch(color=colors['card_boundary'], label='Card Boundaries'),
@@ -235,14 +235,14 @@ class VisualizationComponents:
         
         ax.legend(handles=legend_elements, 
                  loc='upper right', 
-                 fontsize=DiagnosticStyling.FONTS['legend']['size'],
+                 fontsize=cDiagnosticStyling.FONTS['legend']['size'],
                  framealpha=0.9)
     
     @staticmethod
     def create_statistics_histogram(ax: plt.Axes, data: np.ndarray, 
                                   title: str, threshold: Optional[float] = None) -> None:
         """Create standardized histogram for statistical analysis"""
-        colors = DiagnosticStyling.COLORS
+        colors = cDiagnosticStyling.COLORS
         
         # Create histogram
         ax.hist(data, bins=30, alpha=0.7, color=colors['histogram_primary'],
@@ -256,11 +256,11 @@ class VisualizationComponents:
             ax.legend()
         
         # Styling
-        ax.set_title(title, **DiagnosticStyling.FONTS['title_small'])
+        ax.set_title(title, **cDiagnosticStyling.FONTS['title_small'])
         ax.grid(True, alpha=0.3)
-        ax.set_ylabel('Frequency', **DiagnosticStyling.FONTS['label_medium'])
+        ax.set_ylabel('Frequency', **cDiagnosticStyling.FONTS['label_medium'])
 
-class FilenameGenerator:
+class cFilenameGenerator:
     """Standardized filename generation for diagnostic outputs"""
     
     @staticmethod

@@ -14,7 +14,7 @@ from typing import Optional, Tuple, List, Dict
 import json
 import os
 
-class DynamicWindowFinder:
+class cDynamicWindowFinder:
     """Cross-platform WeChat window detection system"""
     
     def __init__(self):
@@ -766,12 +766,12 @@ class DynamicWindowFinder:
         return None
 
 
-def main():
+def fmain():
     """Test the dynamic window finder"""
     print("🚀 动态 WeChat 窗口检测测试")
     print("=" * 50)
     
-    finder = DynamicWindowFinder()
+    finder = cDynamicWindowFinder()
     
     # Try to load existing config first
     window_coords = finder.load_window_config()
@@ -803,4 +803,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    fmain()

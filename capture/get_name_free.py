@@ -5,10 +5,10 @@ import cv2
 import pyautogui
 
 from Constants import Constants
-from capture.monitor_new_message import recognize_message
+from capture.monitor_new_message import frecognize_message
 import easyocr
 OCR_READER = easyocr.Reader(['ch_sim', 'en'], gpu=True)  # 添加gpu=True参数启用GPU加速
-def get_chat_name(image_path, screenshot_dir=Constants.CHATNAME_SCREENSHOT_DIR, crop_region=(55, 55+40, 320, 320+1000)):
+def fget_chat_name(image_path, screenshot_dir=Constants.CHATNAME_SCREENSHOT_DIR, crop_region=(55, 55+40, 320, 320+1000)):
     """
     处理微信截图并执行OCR识别
     参数：
@@ -43,7 +43,7 @@ def get_chat_name(image_path, screenshot_dir=Constants.CHATNAME_SCREENSHOT_DIR, 
     return texts[0]
 
 
-def get_friend_name(x,y,image_path):
+def fget_friend_name(x,y,image_path):
     # 添加空值检查
     if x is not None and y is not None:
         try:
@@ -100,13 +100,13 @@ def get_friend_name(x,y,image_path):
         # else:
         #     print(f"坐标 ({x}, {y}) 不在任何区间内")
 # 处理Retina显示屏坐标转换（关键步骤）
-def convert_retina_coords(pos):
+def fconvert_retina_coords(pos):
     screen_scale = pyautogui.screenshot().size[0] / pyautogui.size()[0]
     return (int(pos.left / screen_scale),
             int(pos.top / screen_scale),
             int(pos.width / screen_scale),
             int(pos.height / screen_scale))
-def get_friend_name_from_title(x,y,image_path):
+def fget_friend_name_from_title(x,y,image_path):
     # 添加空值检查
     if x is not None and y is not None:
 

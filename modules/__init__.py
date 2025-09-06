@@ -10,11 +10,11 @@ Modules:
 - m_ScreenShot_WeChatWindow: Screenshot capture functionality for WeChat windows
 """
 
-from .m_ScreenShot_WeChatWindow import WeChatScreenshotCapture, capture_screenshot
+from .m_ScreenShot_WeChatWindow import cWeChatScreenshotCapture, fcapture_screenshot
 
 __all__ = [
-    'WeChatScreenshotCapture',
-    'capture_screenshot'
+    'cWeChatScreenshotCapture',
+    'fcapture_screenshot'
 ]
 
 __version__ = "1.0.0"

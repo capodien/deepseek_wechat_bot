@@ -11,11 +11,11 @@ import pyautogui
 from pynput import keyboard
 
 # 本地模块导入
-from capture.deal_chatbox import get_message_area_screenshot, get_chat_messages
-from capture.get_name_free import get_friend_name
-from capture.monitor_new_message import recognize_message, recognize_message_forwin
-from capture.text_change_monitor import detect_new_message_by_text_change
-from modules.m_ScreenShot_WeChatWindow import capture_messages_screenshot
+from capture.deal_chatbox import fget_message_area_screenshot, fget_chat_messages
+from capture.get_name_free import fget_friend_name
+from capture.monitor_new_message import frecognize_message, frecognize_message_forwin
+from capture.text_change_monitor import fdetect_new_message_by_text_change
+from modules.m_ScreenShot_WeChatWindow import fcapture_messages_screenshot
 from db import db
 from deepseek import deepseekai
 
@@ -27,7 +27,7 @@ SAFE_MODE = True  # 安全模式：只输入不发送消息
 # 全局停止标志 - 使用 threading.Event 以便诊断面板控制
 stop_bot = threading.Event()
 
-def on_key_press(key):
+def fon_key_press(key):
     """ESC键监听器"""
     global stop_bot
     try:
@@ -38,15 +38,15 @@ def on_key_press(key):
     except AttributeError:
         pass
 
-def start_key_listener():
+def fstart_key_listener():
     """启动键盘监听器"""
-    listener = keyboard.Listener(on_press=on_key_press)
+    listener = keyboard.Listener(on_press=fon_key_press)
     listener.daemon = True  # 设置为守护线程
     listener.start()
     return listener
 
 
-def load_config():
+def fload_config():
     """加载配置文件"""
     try:
         with open('config.cfg', 'r', encoding='utf-8') as f:
@@ -72,7 +72,7 @@ import io
 import platform
 
 
-def copy_image_to_clipboard(image_path):
+def fcopy_image_to_clipboard(image_path):
     system = platform.system()
     img = Image.open(image_path)
 
@@ -102,7 +102,7 @@ def copy_image_to_clipboard(image_path):
         clipboard.store()
 
 
-def send_image(image_path):
+def fsend_image(image_path):
     """发送图片文件（适用于微信桌面端）"""
     try:
         import pyperclip
@@ -121,7 +121,7 @@ def send_image(image_path):
             image_path = os.path.abspath(image_path)
 
         # pyperclip.copy(image_path)
-        copy_image_to_clipboard(image_path)
+        fcopy_image_to_clipboard(image_path)
         time.sleep(0.5)
 
         # 粘贴路径并确认（Windows/Mac不同热键）
@@ -141,7 +141,7 @@ def send_image(image_path):
         print(f"图片发送失败: {str(e)}")
 
 
-def send_reply(text, safe_mode=True):
+def fsend_reply(text, safe_mode=True):
     """发送消息（回车发送方案）- 支持安全模式"""
     try:
         import pyperclip
@@ -177,7 +177,7 @@ def send_reply(text, safe_mode=True):
         print(f"操作失败: {str(e)}")
 
 
-def cleanup_old_screenshots(max_files=100, max_days=7):
+def fcleanup_old_screenshots(max_files=100, max_days=7):
     """清理旧截图文件"""
     import glob
     from datetime import datetime, timedelta
@@ -226,7 +226,7 @@ def cleanup_old_screenshots(max_files=100, max_days=7):
         print(f"截图清理失败: {str(e)}")
         return 0
 
-def get_screenshot_stats():
+def fget_screenshot_stats():
     """获取截图统计信息"""
     import glob
     
@@ -252,7 +252,7 @@ def get_screenshot_stats():
         print(f"获取截图统计失败: {str(e)}")
         return 0, 0
 
-def load_contacts():
+def fload_contacts():
     """加载监听名单"""
     try:
         with open('names.txt', 'r', encoding='utf-8') as f:
@@ -264,8 +264,8 @@ def load_contacts():
 
 if __name__ == "__main__":
     # 初始化配置
-    WORK_MODE = load_config()
-    listen_list = load_contacts()
+    WORK_MODE = fload_config()
+    listen_list = fload_contacts()
     db.create_db()
     db.create_messagesdb()
 
@@ -279,19 +279,19 @@ if __name__ == "__main__":
     print("🌐 诊断面板: http://localhost:5001")
     
     # 清理旧截图并显示统计信息
-    files_count, size_mb = get_screenshot_stats()
+    files_count, size_mb = fget_screenshot_stats()
     print(f"📷 当前截图文件: {files_count} 个，占用空间: {size_mb:.1f} MB")
     
     if files_count > 200:  # 如果文件太多就自动清理
         print("🧹 检测到截图文件过多，开始自动清理...")
-        cleanup_old_screenshots(max_files=100, max_days=3)
-        files_count, size_mb = get_screenshot_stats()
+        fcleanup_old_screenshots(max_files=100, max_days=3)
+        files_count, size_mb = fget_screenshot_stats()
         print(f"📷 清理后: {files_count} 个文件，{size_mb:.1f} MB")
     
     # 诊断服务器已移除 - 使用独立的 step_diagnostic_server.py
     
     # 启动键盘监听器
-    key_listener = start_key_listener()
+    key_listener = fstart_key_listener()
     
     # 初始化状态
     for name in listen_list:
@@ -306,7 +306,7 @@ if __name__ == "__main__":
             
             # Step 1: Screenshot Capture
             screenshot_start = time.time()
-            screenshot_path = capture_messages_screenshot()
+            screenshot_path = fcapture_messages_screenshot()
             screenshot_duration = (time.time() - screenshot_start) * 1000
             
             # Update current screenshot for dashboard
@@ -318,15 +318,15 @@ if __name__ == "__main__":
                 detection_start = time.time()
                 
                 # Try new text change detection method first
-                x, y = detect_new_message_by_text_change(screenshot_path)
+                x, y = fdetect_new_message_by_text_change(screenshot_path)
                 
                 # Fallback to red dot detection if text change method fails
                 if x is None or y is None:
                     print("[调试] 文本变化检测未发现新消息，尝试红点检测")
                     if platform.system() == 'Darwin':
-                        x, y = recognize_message(screenshot_path)
+                        x, y = frecognize_message(screenshot_path)
                     elif platform.system() == 'Windows':
-                        x, y = recognize_message_forwin(screenshot_path)
+                        x, y = frecognize_message_forwin(screenshot_path)
                 else:
                     print(f"[调试] 通过文本变化检测到新消息！位置: ({x}, {y})")
                 
@@ -340,10 +340,10 @@ if __name__ == "__main__":
                     
                     # Step 3: Name Recognition
                     name_start = time.time()
-                    screenshot_path = capture_messages_screenshot()
+                    screenshot_path = fcapture_messages_screenshot()
                     if screenshot_path:
                         pass  # Screenshot captured for name extraction
-                    name = get_friend_name(x, y, screenshot_path)
+                    name = fget_friend_name(x, y, screenshot_path)
                     name_duration = (time.time() - name_start) * 1000
                     
 
@@ -357,10 +357,10 @@ if __name__ == "__main__":
                         try:
                             # Step 4: OCR Processing
                             ocr_start = time.time()
-                            screenshot_path = get_message_area_screenshot()
+                            screenshot_path = fget_message_area_screenshot()
                             if screenshot_path:
                                 pass  # Screenshot captured for OCR
-                            final_result = get_chat_messages(screenshot_path)
+                            final_result = fget_chat_messages(screenshot_path)
                             ocr_duration = (time.time() - ocr_start) * 1000
                             pprint(final_result)
                             if final_result['white']:
@@ -379,7 +379,7 @@ if __name__ == "__main__":
                                     
                                     # Step 6: Message Input
                                     input_start = time.time()
-                                    send_reply(reply, safe_mode=SAFE_MODE)
+                                    fsend_reply(reply, safe_mode=SAFE_MODE)
                                     input_duration = (time.time() - input_start) * 1000
                                 elif WORK_MODE == "forward":
                                     reply = f"{FORWARD_PREFIX}{latest_msg}"
@@ -388,8 +388,8 @@ if __name__ == "__main__":
                                     # Step 6: Message Input (Forward mode)
                                     input_start = time.time()
                                     pyautogui.click(118, 117)
-                                    send_image(screenshot_path)
-                                    send_reply(reply, safe_mode=SAFE_MODE)
+                                    fsend_image(screenshot_path)
+                                    fsend_reply(reply, safe_mode=SAFE_MODE)
                                     input_duration = (time.time() - input_start) * 1000
                                 
                                 processing_time = (time.time() - start_time) * 1000

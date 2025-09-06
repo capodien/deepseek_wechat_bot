@@ -1,0 +1,35 @@
+{
+  "last_updated": "2025-09-06T17:09:01.268450",
+  "screenshot_path": "20250906_170900_WeChat.png",
+  "processing_info": {
+    "source_image": "20250906_170900_WeChat.png",
+    "full_path": "pic/screenshots/20250906_170900_WeChat.png",
+    "processing_timestamp": "20250906_170900"
+  },
+  "image_dimensions": {
+    "width": 1440,
+    "height": 845
+  },
+  "detection_statistics": {
+    "cards_detected": 0,
+    "avatars_detected": 0,
+    "names_detected": 0,
+    "times_detected": 0
+  },
+  "coordinates": {
+    "conversation_area": {
+      "x": 113,
+      "y": 0,
+      "width": 316,
+      "height": 845,
+      "confidence": 0.9
+    },
+    "cards": [],
+    "ocr_regions": {
+      "contact_names": [],
+      "timestamps": [],
+      "messages": [],
+      "avatars": []
+    }
+  }
+}

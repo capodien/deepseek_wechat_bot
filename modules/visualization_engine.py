@@ -25,11 +25,11 @@ import matplotlib.patches as patches
 from matplotlib.gridspec import GridSpec
 
 from .diagnostic_templates import (
-    DiagnosticStyling, LayoutTemplates, VisualizationComponents, FilenameGenerator
+    cDiagnosticStyling, cLayoutTemplates, cVisualizationComponents, cFilenameGenerator
 )
 
 
-class DiagnosticVisualizationEngine:
+class cDiagnosticVisualizationEngine:
     """
     Centralized visualization engine for all card processing diagnostics
     
@@ -1099,7 +1099,7 @@ def create_card_visualization(detector, image_path: str, output_path: str = None
 
 
 # Maintain backward compatibility by aliasing the old class name
-VisualizationEngine = DiagnosticVisualizationEngine
+VisualizationEngine = cDiagnosticVisualizationEngine
 
 
 if __name__ == "__main__":
@@ -1107,7 +1107,7 @@ if __name__ == "__main__":
     print("=" * 50)
     
     # Test diagnostic visualization engine
-    engine = DiagnosticVisualizationEngine()
+    engine = cDiagnosticVisualizationEngine()
     print("✅ Diagnostic Visualization Engine initialized")
     
     # Test basic functionality (backward compatibility)

@@ -223,6 +223,36 @@ screenshot_path, analysis = screenshot_processor.capture_and_process_screenshot(
 2. **Frontend button** in `step_diagnostic.html`  
 3. **🎨 Visual verification** (MANDATORY for all computer vision features)
 4. **Error handling** with detailed diagnostics
+5. **📌 Input/Output Contracts** (MANDATORY for all processing steps)
+
+**📌 Input/Output Contract Requirements for ALL Processing Steps**:
+- **Mandatory Documentation**: Every function/method must define clear input/output contracts
+- **Standardized Format**: Use 📌 INPUT CONTRACT and 📌 OUTPUT CONTRACT sections
+- **Complete Specifications**: Include data types, constraints, expected formats, and side effects
+- **Failure Modes**: Document all possible failure conditions and return values
+- **Dependencies**: List required prerequisites and upstream processing results
+
+**Contract Format Template**:
+```python
+def process_step(self, image_path: str, coord_context = None) -> ResultType:
+    """
+    Brief description of processing step
+    
+    📌 INPUT CONTRACT:
+    - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+    - coord_context: Optional[WeChatCoordinateContext] - Context for integration
+    - return_context: bool - Whether to return coordinate context with results
+    
+    📌 OUTPUT CONTRACT:
+    Standard Mode:
+    - Success: SpecificType - Detailed description of success return value
+    - Failure: None or Empty - Description of failure conditions
+    
+    Side Effects:
+    - File generation, context updates, validation requirements
+    - Dependencies on other processing steps
+    """
+```
 
 **Visual Diagnostic Requirements for ALL CV Features**:
 - **Automatic overlay generation** on original screenshots
@@ -254,18 +284,23 @@ screenshot_path, analysis = screenshot_processor.capture_and_process_screenshot(
 1. **Choose Architecture**: Decide between modular components or inline implementation
    - **Use modules**: For reusable functionality, complex features, or visual components
    - **Example**: `from modules import visualization_engine, screenshot_processor`
-2. Implement feature with comprehensive error handling
-3. Create diagnostic endpoint in `step_diagnostic_server.py`
-4. Add frontend button in `step_diagnostic.html`
-5. **🎨 MANDATORY: Implement visual overlay generation**:
+2. **📌 MANDATORY: Define Input/Output Contracts**:
+   - Add INPUT CONTRACT section with parameter specifications
+   - Add OUTPUT CONTRACT section with return value specifications  
+   - Document all failure modes and side effects
+   - Include dependencies on other processing steps
+3. Implement feature with comprehensive error handling
+4. Create diagnostic endpoint in `step_diagnostic_server.py`
+5. Add frontend button in `step_diagnostic.html`
+6. **🎨 MANDATORY: Implement visual overlay generation**:
    - **Option A**: Use `visualization_engine.VisualizationEngine` for consistent styling
    - **Option B**: Implement custom visualization within detector classes
    - Create visualization function that draws ALL detection elements
    - Use distinct colors and clear labeling
    - Save overlay image with descriptive timestamp filename
    - Return overlay path in API response for frontend display
-6. Test error handling, edge cases, and visual accuracy
-7. Verify overlay displays correctly in web interface
+7. Test error handling, edge cases, and visual accuracy
+8. Verify overlay displays correctly in web interface
 
 **Post-Development**:
 1. **MANDATORY**: Update [`process.md`](process.md) with workflow changes
@@ -420,13 +455,163 @@ sqlite3 history.db "SELECT * FROM conversations LIMIT 5;"
 from modules import m_Card_Processing
 
 # Initialize detectors
-width_detector = m_Card_Processing.SimpleWidthDetector()
+boundary_coordinator = m_Card_Processing.BoundaryCoordinator()
 avatar_detector = m_Card_Processing.CardAvatarDetector()
 
 # Use as before - full backward compatibility
-width_result = width_detector.detect_width("screenshot.png")
+width_result = boundary_coordinator.detect_width("screenshot.png")
 avatars, info = avatar_detector.detect_avatars("screenshot.png")
 ```
+
+### 11.5 Detector Class Documentation Standards
+
+**MANDATORY**: Every detector class in `m_Card_Processing.py` must follow this documentation standard:
+
+**NOTE**: The processing pipeline uses **PHASES** (major processing stages) containing **algorithm steps** (individual operations within each phase). This creates clear hierarchical organization.
+
+#### Class Documentation Template:
+```python
+class DetectorClassName:
+    """
+    Brief one-line description of what this detector does.
+    
+    📋 PURPOSE:
+    Detailed explanation of the detector's role in the processing pipeline.
+    This detector implements PHASE X of the 6-phase WeChat card processing pipeline.
+    What specific problem does it solve? What does it detect or analyze?
+    
+    📌 INPUT CONTRACT:
+    - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+    - param2: Type - Description of parameter and constraints
+    - param3: Optional[Type] - Optional parameters with defaults
+    
+    📌 OUTPUT CONTRACT:
+    - Success: ReturnType - Detailed description of success return value
+    - Failure: None or ErrorType - Description of failure conditions
+    - Example: Tuple[int, int, int] - (left_boundary, right_boundary, width)
+    
+    🔧 ALGORITHM:
+    1. Load and validate input data
+    2. Apply preprocessing transformations  
+    3. Execute core detection/analysis logic
+    4. Post-process and validate results
+    5. Generate output with confidence scoring
+    
+    📊 KEY PARAMETERS:
+    - PARAM_NAME = value  # What this parameter controls
+    - THRESHOLD = 0.5     # Why this threshold was chosen
+    
+    🎨 VISUAL OUTPUT:
+    - Debug mode generates: filename_pattern.png
+    - Visualization shows: what elements are highlighted
+    - Color coding: green=detected, red=failed, etc.
+    
+    🔍 DEBUG VARIABLES:
+    - Key variables used for visualization:
+      • variable_name: Type - Description of what it represents
+      • confidence_score: float - Used to show detection quality
+      • profile_array: np.array - Plotted as intensity graph
+    - Debug triggers: When debug_mode=True or specific thresholds exceeded
+    - Output format: Images saved to pic/screenshots/ with timestamp
+    
+    ⚙️ DEPENDENCIES:
+    - Required: opencv-python, numpy
+    - Optional: visualization_engine (for debug output)
+    - Integrates with: Other detector classes if applicable
+    """
+```
+
+#### Method Documentation Requirements:
+```python
+def detect_method(self, image_path: str, other_params) -> ReturnType:
+    """
+    Brief description of what this method does.
+    
+    📌 INPUT CONTRACT:
+    - image_path: str - Path to screenshot file
+    - other_params: Type - Description and constraints
+    
+    📌 OUTPUT CONTRACT:
+    - Success: Type - What is returned on success
+    - Failure: None - What happens on failure
+    
+    Side Effects:
+    - File generation, context updates, etc.
+    """
+```
+
+#### Example Implementation:
+```python
+class LeftBoundaryDetector:
+    """
+    Detects the left boundary of WeChat conversation area using vertical edge detection.
+    
+    📋 PURPOSE:
+    Identifies the visual boundary between WeChat's sidebar and the main conversation
+    area by finding the strongest vertical edge in the left portion of the screen.
+    This detector implements PHASE 1 of the 6-phase WeChat card processing pipeline.
+    This establishes the left coordinate for all subsequent message card processing.
+    
+    📌 INPUT CONTRACT:
+    - image_path: str - Path to WeChat screenshot (PNG/JPG, min 800x600px)
+    - debug_mode: bool - Enable visualization output (default: False)
+    
+    📌 OUTPUT CONTRACT:
+    - Success: int - X-coordinate of left boundary in pixels
+    - Failure: None - Returns None if detection fails
+    - Range: Typically 50-150px from left edge
+    
+    🔧 ALGORITHM:
+    1. Load image and focus on left 65% (conversation area)
+    2. Apply Sobel edge detection to find vertical edges
+    3. Create 1D intensity profile by averaging gradients
+    4. Find strongest edge peak using Gaussian smoothing
+    5. Apply 8px offset for actual boundary position
+    
+    📊 KEY PARAMETERS:
+    - CONVERSATION_WIDTH_RATIO = 0.65  # Search left 65% of screen
+    - SIDEBAR_OFFSET = 8               # Pixels offset from edge to boundary
+    - EDGE_THRESHOLD_LOW = 30          # Minimum edge strength
+    
+    🎨 VISUAL OUTPUT:
+    - Debug file: YYYYMMDD_HHMMSS_01_LeftBoundary_XXXpx.png
+    - Yellow line: Detected edge position
+    - Green line: Actual boundary (with offset)
+    - Text overlay: Coordinates and confidence score
+    
+    🔍 DEBUG VARIABLES:
+    - Key variables used for visualization:
+      • detected_edge: int - X-coordinate where vertical edge detected (yellow line)
+      • left_boundary: int - Final boundary after offset applied (green line)
+      • confidence: float (0-1) - Peak strength vs noise ratio (text overlay)
+      • profile: np.array - 1D gradient intensity profile (could be plotted)
+    - Debug triggers: When debug_mode=True in constructor
+    - Output format: PNG saved to pic/screenshots/ with timestamp prefix
+    
+    ⚙️ DEPENDENCIES:
+    - Required: opencv-python, numpy
+    - Optional: image_utils.find_vertical_edge_x (modular import)
+    - Integrates with: BoundaryCoordinator for complete width detection
+    """
+```
+
+#### Documentation Validation Checklist:
+- [ ] Class has complete docstring with all sections
+- [ ] PURPOSE clearly explains the detector's role
+- [ ] INPUT CONTRACT lists all parameters with types
+- [ ] OUTPUT CONTRACT specifies return values and failure modes
+- [ ] ALGORITHM provides step-by-step explanation
+- [ ] KEY PARAMETERS documents important constants
+- [ ] VISUAL OUTPUT describes debug visualizations
+- [ ] DEBUG VARIABLES lists key variables used in visualization
+- [ ] DEPENDENCIES lists required and optional imports
+
+#### Debug Documentation Best Practices:
+1. **List ALL variables** passed to debug visualization methods
+2. **Explain visual mapping**: Which variable creates which visual element
+3. **Note unused variables**: If a variable is passed but not visualized (e.g., profile array)
+4. **Describe triggers**: When debug mode activates (constructor flag, thresholds, errors)
+5. **Include examples**: Show actual values from test runs when possible
 
 **Using Individual Modules** (Advanced/custom development):
 ```python

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 =====================================================================
- Module: Step 1.0 - Screenshot Capture Module
+ Module: Phase 1.0 - Screenshot Capture Module
  File:   m_ScreenShot_WeChatWindow.py
 =====================================================================
 
@@ -13,9 +13,9 @@
 - Author:         AI Assistant (WeChat Bot System)
 
 📌 Module Position
-- Pipeline Step:  Step 1.0: Screenshot Capture
-- Previous Step:  None (Entry point)
-- Next Step:      Step 2.0 - New Message Detection (monitor_new_message.py)
+- Pipeline Phase:  Phase 1.0: Screenshot Capture
+- Previous Phase:  None (Entry point)
+- Next Phase:      Phase 2.0 - New Message Detection (monitor_new_message.py)
 
 📌 Input Contract
 - capture_screenshot() Unified Parameters:
@@ -30,7 +30,7 @@
         use_dynamic_detection: bool - Whether to dynamically detect window (overrides detect_window)
 - capture_messages_screenshot() Legacy Alias:
     Identical to legacy style parameters above (maintained for backward compatibility)
-- WeChatScreenshotCapture() Constructor:
+- ccWeChatScreenshotCapture() Constructor:
     output_dir: str (default: "pic/screenshots") - Directory to save screenshots
 - System Prerequisites:
     WeChat desktop application (must be running and visible)
@@ -81,7 +81,7 @@ Usage:
     from modules.m_ScreenShot_WeChatWindow import capture_screenshot, capture_messages_screenshot
     
     # Modern style (recommended)
-    screenshot_path = capture_screenshot()
+    screenshot_path = fcapture_screenshot()
     screenshot_path = capture_screenshot("custom/dir", "my_screenshot.png")
     
     # Legacy style (backward compatibility)
@@ -89,7 +89,7 @@ Usage:
     screenshot_path = capture_messages_screenshot(save_dir="pics", prefix="test_")
     
     # Advanced usage
-    capturer = WeChatScreenshotCapture("custom/output/dir")
+    capturer = cWeChatScreenshotCapture("custom/output/dir")
     capturer.detect_wechat_window()
     screenshot_path = capturer.capture_screenshot("custom_name.png")
 """
@@ -103,7 +103,7 @@ from typing import Optional, Tuple, Dict
 import json
 
 
-class WeChatScreenshotCapture:
+class cWeChatScreenshotCapture:
     """
     WeChat Window Screenshot Capture Module
     
@@ -418,11 +418,18 @@ class WeChatScreenshotCapture:
         """
         Capture precise screenshot of WeChat window
         
-        Args:
-            save_as: Custom filename, auto-generated if None
-            
-        Returns:
-            Path to saved screenshot or None if failed
+        📌 INPUT CONTRACT:
+        - save_as: Optional[str] - Custom filename (auto-generated if None)
+        - Prerequisites: WeChat desktop app running and visible, window coordinates detected
+        
+        📌 OUTPUT CONTRACT:
+        - Success: str - Path to saved screenshot file (YYYYMMDD_HHMMSS_WeChat.png)
+        - Failure: None
+        
+        Side Effects:
+        - Creates screenshot file in self.output_dir directory
+        - Validates screenshot quality if validation_enabled=True
+        - Updates processing timestamp and file metadata
         """
         if not self.window_coords:
             print("❌ No window coordinates available. Run detect_wechat_window() first.")
@@ -497,12 +504,12 @@ class WeChatScreenshotCapture:
         print("🧪 WECHAT SCREENSHOT CAPTURE TEST")
         print("="*50)
         
-        # Step 1: Try to load existing coordinates
+        # Try to load existing coordinates
         print("\n1. Loading saved coordinates...")
         if not self.load_window_coordinates():
             print("   No valid saved coordinates, will detect fresh")
         
-        # Step 2: Detect window (if needed)
+        # Detect window (if needed)
         if not self.window_coords:
             print("\n2. Detecting WeChat window...")
             # Try native first, fallback to OCR
@@ -514,11 +521,11 @@ class WeChatScreenshotCapture:
         else:
             print("\n2. Using loaded coordinates")
         
-        # Step 3: Save coordinates
+        # Save coordinates
         print("\n3. Saving window coordinates...")
         self.save_window_coordinates()
         
-        # Step 4: Take test screenshot
+        # Take test screenshot
         print("\n4. Capturing test screenshot...")
         screenshot_path = self.capture_screenshot("test_capture.png")
         
@@ -539,14 +546,14 @@ class WeChatScreenshotCapture:
 # Global instance for efficient reuse
 _global_capturer = None
 
-def get_capturer():
+def fget_capturer():
     """Get global capturer instance for efficient reuse"""
     global _global_capturer
     if _global_capturer is None:
-        _global_capturer = WeChatScreenshotCapture()
+        _global_capturer = cWeChatScreenshotCapture()
     return _global_capturer
 
-def capture_screenshot(output_dir: str = "pic/screenshots", 
+def fcapture_screenshot(output_dir: str = "pic/screenshots", 
                       filename: str = None,
                       detect_window: bool = True,
                       # Legacy parameters for backward compatibility
@@ -557,26 +564,27 @@ def capture_screenshot(output_dir: str = "pic/screenshots",
     """
     Unified WeChat screenshot capture function
     
-    Supports both modern and legacy parameter styles:
+    📌 INPUT CONTRACT:
+    Modern Parameters:
+    - output_dir: str - Directory to save screenshot (default: "pic/screenshots")
+    - filename: Optional[str] - Custom filename (auto-generated if None)
+    - detect_window: bool - Whether to auto-detect window if not cached
     
-    Modern style:
-        capture_screenshot() 
-        capture_screenshot("custom/dir", "my_screenshot.png")
-        
-    Legacy style (backward compatibility):
-        capture_screenshot(save_dir="pics", prefix="wechat_")
+    Legacy Parameters (backward compatibility):
+    - save_dir: Optional[str] - Directory override (legacy)
+    - region: Optional - Unused but supported for compatibility
+    - prefix: Optional[str] - Filename prefix override (legacy)
+    - use_dynamic_detection: Optional[bool] - Detection override (legacy)
     
-    Args:
-        output_dir: Directory to save screenshot (modern)
-        filename: Custom filename (modern, auto-generated if None)
-        detect_window: Whether to auto-detect window if not cached (modern)
-        save_dir: Directory to save screenshot (legacy, overrides output_dir)
-        region: Specific screen region (legacy, unused but supported)
-        prefix: Filename prefix (legacy, overrides filename generation)
-        use_dynamic_detection: Force window detection (legacy, overrides detect_window)
+    📌 OUTPUT CONTRACT:
+    - Success: str - Path to saved screenshot file (YYYYMMDD_HHMMSS_WeChat.png)
+    - Failure: None
     
-    Returns:
-        Path to saved screenshot or None if failed
+    Side Effects:
+    - Creates output directory if it doesn't exist
+    - Auto-detects WeChat window if needed
+    - Validates screenshot quality
+    - Supports both modern and legacy parameter styles
     """
     try:
         # Handle legacy parameter mapping
@@ -585,7 +593,7 @@ def capture_screenshot(output_dir: str = "pic/screenshots",
         if use_dynamic_detection is not None:
             detect_window = use_dynamic_detection
         
-        capturer = get_capturer()
+        capturer = fget_capturer()
         capturer.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
         
@@ -616,7 +624,7 @@ def capture_screenshot(output_dir: str = "pic/screenshots",
         print(f"❌ Screenshot capture error: {e}")
         return None
 
-def detect_wechat_window() -> Optional[Tuple[int, int, int, int]]:
+def fdetect_wechat_window() -> Optional[Tuple[int, int, int, int]]:
     """
     Simple API function to detect WeChat window coordinates
     
@@ -624,12 +632,12 @@ def detect_wechat_window() -> Optional[Tuple[int, int, int, int]]:
         (left, top, width, height) or None if not found
         
     Usage:
-        coords = detect_wechat_window()
+        coords = fdetect_wechat_window()
         if coords:
             left, top, width, height = coords
     """
     try:
-        capturer = get_capturer()
+        capturer = fget_capturer()
         coords = capturer.detect_wechat_window()
         return coords
     except Exception as e:
@@ -640,7 +648,7 @@ def detect_wechat_window() -> Optional[Tuple[int, int, int, int]]:
 # LEGACY ALIAS FOR BACKWARD COMPATIBILITY
 # ============================================================================
 
-def capture_messages_screenshot(save_dir="pic/screenshots", 
+def fcapture_messages_screenshot(save_dir="pic/screenshots", 
                                region=None, 
                                prefix="wechat_", 
                                use_dynamic_detection=True):
@@ -650,19 +658,19 @@ def capture_messages_screenshot(save_dir="pic/screenshots",
     This function is now just an alias to the unified capture_screenshot()
     function with legacy parameter mapping.
     """
-    return capture_screenshot(
+    return fcapture_screenshot(
         save_dir=save_dir,
         region=region,
         prefix=prefix,
         use_dynamic_detection=use_dynamic_detection
     )
 
-def get_wechat_window_coords():
+def fget_wechat_window_coords():
     """
     Backward compatibility function - get current WeChat window coordinates
     """
     try:
-        capturer = get_capturer()
+        capturer = fget_capturer()
         coords = capturer.detect_wechat_window()
         if coords:
             return coords
@@ -678,14 +686,14 @@ def get_wechat_window_coords():
 # MODULE TEST AND VALIDATION
 # ============================================================================
 
-def main():
+def fmain():
     """Test the ScreenShot_WeChatWindow module"""
     print("🚀 ScreenShot_WeChatWindow Module Test")
     print("="*50)
     
     # Test simple API
     print("\n1. Testing simple API...")
-    screenshot_path = capture_screenshot()
+    screenshot_path = fcapture_screenshot()
     if screenshot_path:
         print(f"✅ Simple API test passed: {screenshot_path}")
     else:
@@ -693,7 +701,7 @@ def main():
     
     # Test advanced API
     print("\n2. Testing advanced API...")
-    capturer = WeChatScreenshotCapture("pic/screenshots")
+    capturer = cWeChatScreenshotCapture("pic/screenshots")
     success = capturer.test_capture_sequence()
     
     if success:
@@ -702,7 +710,7 @@ def main():
         
         # Test backward compatibility
         print(f"\n3. Testing backward compatibility...")
-        old_style_path = capture_messages_screenshot()
+        old_style_path = fcapture_messages_screenshot()
         if old_style_path:
             print(f"✅ Backward compatibility test passed: {old_style_path}")
         else:
@@ -716,4 +724,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    fmain()

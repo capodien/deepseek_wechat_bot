@@ -7,13 +7,13 @@ from datetime import datetime
 import pyautogui
 
 from Constants import Constants
-from .window_manager import get_window_manager
+from .window_manager import fget_window_manager
 
 
 # Screenshot capture function moved to modules/m_ScreenShot_WeChatWindow.py
 # This file now only contains message recognition functions
 
-def recognize_message_forwin(image_path):
+def frecognize_message_forwin(image_path):
     """定位微信新消息红点坐标，返回(x, y)元组"""
     # 加载图像
     image = cv2.imread(image_path)
@@ -57,7 +57,7 @@ def recognize_message_forwin(image_path):
     return (None, None)
 
 
-def recognize_message(image_path):
+def frecognize_message(image_path):
     """定位微信新消息红点坐标，返回(x, y)元组"""
     # 闪电加载图像
     image = cv2.imread(image_path)
