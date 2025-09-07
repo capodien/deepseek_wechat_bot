@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2025-09-07T20:12:59.531093",
+    "event_type": "test",
+    "module": "diagnostic_logger",
+    "data": {
+      "message": "Test event"
+    },
+    "visual_output": null,
+    "metrics": {},
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-09-07T20:12:59.531112",
+    "event_type": "performance",
+    "module": "test_module",
+    "data": {
+      "operation": "initialization",
+      "items_processed": 100
+    },
+    "visual_output": null,
+    "metrics": {
+      "duration_ms": 125.5
+    },
+    "status": "success"
+  }
+]

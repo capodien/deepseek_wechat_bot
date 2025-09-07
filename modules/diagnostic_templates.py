@@ -294,3 +294,37 @@ class cFilenameGenerator:
         output_dir = "pic/screenshots"
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
+
+
+# =============================================================================
+# MANUAL CODE TESTING
+# =============================================================================
+if __name__ == "__main__":
+    print("=" * 60)
+    print("Manual Code Testing - DIAGNOSTIC TEMPLATES")
+    print("=" * 60)
+    print("🔍 [DEBUG] Smoke test ENTRY")
+    
+    try:
+        # Simply instantiate each class in order
+        print("   🔧 Testing cDiagnosticStyling...")
+        styling = cDiagnosticStyling()
+        print("   ✅ cDiagnosticStyling instantiated successfully")
+        
+        print("   🔧 Testing cLayoutTemplates...")
+        layout_templates = cLayoutTemplates()
+        print("   ✅ cLayoutTemplates instantiated successfully")
+        
+        print("   🔧 Testing cVisualizationComponents...")
+        viz_components = cVisualizationComponents()
+        print("   ✅ cVisualizationComponents instantiated successfully")
+        
+        print("   🔧 Testing cFilenameGenerator...")
+        filename_generator = cFilenameGenerator()
+        print("   ✅ cFilenameGenerator instantiated successfully")
+        
+        print("🏁 [DEBUG] Smoke test PASSED")
+        
+    except Exception as e:
+        print(f"   ❌ [ERROR] Smoke test FAILED: {str(e)}")
+        print("🏁 [DEBUG] Smoke test FAILED")

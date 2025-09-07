@@ -230,6 +230,17 @@
             <div class="control-panel">
                 <h3>📊 Level Parameters</h3>
                 
+                <div class="slider-group">
+                    <label>📁 Select Image from Screenshots:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="imageSelector" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Loading screenshots...</option>
+                        </select>
+                        <button onclick="refreshImageList()" style="background: #17a2b8; padding: 8px 15px;">🔄 Refresh</button>
+                        <button onclick="loadSelectedImage()" style="background: #28a745; padding: 8px 15px;">📸 Load</button>
+                    </div>
+                </div>
+                
                 <div class="presets">
                     <button class="preset-button" onclick="setPreset(53, 107, 0.67)">Photoshop Default</button>
                     <button class="preset-button" onclick="setPreset(0, 255, 1.0)">No Adjustment</button>
@@ -308,9 +319,9 @@
             
             <div class="image-container">
                 <div class="image-box">
-                    <h3>📸 Original Image (Sample Screen Shoot.png)</h3>
+                    <h3>📸 Original Image</h3>
                     <img id="originalImage" class="image-preview" src="/original-image" style="display: block;">
-                    <p id="originalStatus" style="display: none;">Click "Test Settings" to load image</p>
+                    <p id="originalStatus">Select a screenshot from the dropdown above and click "📸 Load" to load a different image</p>
                 </div>
                 
                 <div class="image-box">
@@ -387,7 +398,7 @@
             showStatus('Testing level adjustment settings...', 'processing');
 
             // Call backend API to test settings
-            fetch('/api/test-levels', {
+            fetch('http://127.0.0.1:5003/api/test-levels', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -517,9 +528,88 @@ cv2.imwrite("level_adjusted.png", adjusted)`;
             showStatus('✅ Code generated! Copy the code below.', 'success');
         }
 
+        // Image selection functions
+        function refreshImageList() {
+            showStatus('Refreshing screenshot list...', 'processing');
+            
+            fetch('http://127.0.0.1:5003/api/list-screenshots')
+            .then(response => response.json())
+            .then(data => {
+                const selector = document.getElementById('imageSelector');
+                selector.innerHTML = '';
+                
+                if (data.success && data.screenshots.length > 0) {
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select a screenshot...';
+                    selector.appendChild(defaultOption);
+                    
+                    // Add screenshot options
+                    data.screenshots.forEach(filename => {
+                        const option = document.createElement('option');
+                        option.value = filename;
+                        option.textContent = filename;
+                        selector.appendChild(option);
+                    });
+                    
+                    showStatus(`✅ Found ${data.screenshots.length} screenshots in pic/screenshots/`, 'success');
+                } else {
+                    selector.innerHTML = '<option value="">No screenshots found</option>';
+                    showStatus('❌ No screenshots found in pic/screenshots/', 'error');
+                }
+            })
+            .catch(error => {
+                document.getElementById('imageSelector').innerHTML = '<option value="">Error loading list</option>';
+                showStatus('❌ Failed to load screenshot list: ' + error.message, 'error');
+            });
+        }
+        
+        function loadSelectedImage() {
+            const selector = document.getElementById('imageSelector');
+            const selectedImage = selector.value;
+            
+            if (!selectedImage) {
+                showStatus('❌ Please select a screenshot first', 'error');
+                return;
+            }
+            
+            showStatus('Loading selected image: ' + selectedImage, 'processing');
+            
+            fetch('http://127.0.0.1:5003/api/load-screenshot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: selectedImage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update original image
+                    document.getElementById('originalImage').src = data.image_path + '?t=' + Date.now();
+                    document.getElementById('originalStatus').textContent = `Loaded: ${selectedImage}`;
+                    
+                    // Clear adjusted image
+                    document.getElementById('adjustedImage').style.display = 'none';
+                    document.getElementById('adjustedStatus').textContent = 'Processed image will appear here';
+                    
+                    showStatus(`✅ Loaded image: ${selectedImage}`, 'success');
+                } else {
+                    showStatus('❌ Failed to load image: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Network error loading image: ' + error.message, 'error');
+            });
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeSliders();
+            refreshImageList(); // Auto-load screenshot list on startup
         });
     </script>
 </body>

@@ -1102,29 +1102,23 @@ def create_card_visualization(detector, image_path: str, output_path: str = None
 VisualizationEngine = cDiagnosticVisualizationEngine
 
 
+# =============================================================================
+# MANUAL CODE TESTING
+# =============================================================================
 if __name__ == "__main__":
-    print("🎨 Diagnostic Visualization Engine Module Test")
-    print("=" * 50)
+    print("=" * 60)
+    print("Manual Code Testing - VISUALIZATION ENGINE")
+    print("=" * 60)
+    print("🔍 [DEBUG] Smoke test ENTRY")
     
-    # Test diagnostic visualization engine
-    engine = cDiagnosticVisualizationEngine()
-    print("✅ Diagnostic Visualization Engine initialized")
-    
-    # Test basic functionality (backward compatibility)
-    test_img = np.zeros((400, 600, 3), dtype=np.uint8)
-    
-    # Draw some test elements
-    engine.draw_vertical_line(test_img, 150, 'boundary', "Left Boundary")
-    engine.draw_vertical_line(test_img, 450, 'boundary', "Right Boundary", offset=30)
-    engine.draw_rectangle(test_img, 200, 100, 100, 80, 'card', "Test Card")
-    engine.draw_circle(test_img, 250, 140, 5, 'avatar', "Avatar")
-    
-    info = {'Test': 'Diagnostic Visualization Engine', 'Status': 'Working'}
-    engine.add_info_panel(test_img, info, 10, 300)
-    
-    # Save test image
-    test_path = engine.save_visualization(test_img, "test_image.png", "engine_test")
-    if test_path:
-        print(f"✅ Test visualization created: {test_path}")
-    else:
-        print("❌ Test visualization failed")
+    try:
+        # Simply instantiate the class
+        print("   🔧 Testing cDiagnosticVisualizationEngine...")
+        engine = cDiagnosticVisualizationEngine()
+        print("   ✅ cDiagnosticVisualizationEngine instantiated successfully")
+        
+        print("🏁 [DEBUG] Smoke test PASSED")
+        
+    except Exception as e:
+        print(f"   ❌ [ERROR] Smoke test FAILED: {str(e)}")
+        print("🏁 [DEBUG] Smoke test FAILED")

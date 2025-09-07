@@ -386,6 +386,110 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
+        /* Levels Tool Styles */
+        .levels-tool {
+            background: linear-gradient(135deg, #ff7b7b, #ff6b7d);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .levels-tool h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .levels-tool p {
+            text-align: center;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .control-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-section h4 {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .slider-group {
+            margin: 15px 0;
+        }
+
+        .slider-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .slider-group input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            height: 8px;
+            outline: none;
+        }
+
+        .slider-group span {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .apply-button {
+            background: white;
+            color: #ff6b7d;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .apply-button:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-message {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .image-preview-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .image-container {
+            margin-bottom: 20px;
+        }
+
+        .image-container h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
         .log-area {
             background: #2d3748;
             color: #e2e8f0;
@@ -985,6 +1089,63 @@
             </div>
         </div>
 
+        <!-- NEW: Screenshot Processing Diagnostics (CLAUDE.md Compliance) -->
+        <div class="module-test-card">
+            <div class="module-header">
+                <div class="module-icon">🚀</div>
+                <div class="module-title">
+                    <h3>Screenshot Processing Diagnostics</h3>
+                    <p>Test single-screenshot architecture, performance metrics, and validation systems</p>
+                </div>
+                <div class="module-badge">New</div>
+            </div>
+            
+            <div class="module-functions">
+                <div class="function-test">
+                    <button id="test-single-screenshot-architecture" class="module-test-button">
+                        🏗️ Test Single-Screenshot Architecture
+                    </button>
+                    <div class="function-description">
+                        Test caching system, session management, and performance optimization (50-70% improvement)
+                    </div>
+                </div>
+                
+                <div class="function-test">
+                    <button id="test-screenshot-performance" class="module-test-button">
+                        📊 Test Performance Benchmarks
+                    </button>
+                    <div class="function-description">
+                        Compare traditional vs optimized approach with timing metrics and analysis results
+                    </div>
+                </div>
+                
+                <div class="function-test">
+                    <button id="test-screenshot-validation" class="module-test-button">
+                        🔍 Test Quality Validation
+                    </button>
+                    <div class="function-description">
+                        Multi-level validation: file integrity, dimensions, format compliance, quality scoring
+                    </div>
+                </div>
+                
+                <div class="function-test">
+                    <button id="get-screenshot-cache-info" class="module-test-button">
+                        📈 Get Cache Status
+                    </button>
+                    <div class="function-description">
+                        Real-time cache information, session status, and system configuration details
+                    </div>
+                </div>
+            </div>
+            
+            <div class="module-results" id="screenshot-diagnostics-results">
+                <div class="results-header">🚀 Screenshot Diagnostics Results</div>
+                <div class="results-content">
+                    Click any diagnostic test above to see detailed performance metrics and validation results...
+                </div>
+            </div>
+        </div>
+
         <!-- OCR Zone Boundaries Test Card -->
         <div class="ocr-zone-test-card">
             <div class="module-header">
@@ -1042,6 +1203,85 @@
             </div>
         </div>
 
+        <!-- Levels Adjustment Tool -->
+        <div class="levels-tool">
+            <h3>📊 Photoshop Levels Adjustment Tool</h3>
+            <p>Adjust image levels using Photoshop-style controls</p>
+            
+            <div class="levels-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                <!-- Left Column: Controls -->
+                <div class="levels-controls">
+                    <div class="control-section">
+                        <h4>📁 Select Image</h4>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <select id="imageSelector" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="">Loading screenshots...</option>
+                            </select>
+                            <button onclick="refreshImageList()" style="background: #17a2b8; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">🔄 Refresh</button>
+                            <button onclick="loadSelectedImage()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">📸 Load</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-section">
+                        <h4>🌈 Brightness & Contrast</h4>
+                        <div class="slider-group">
+                            <label for="brightnessSlider">Brightness (-100 to +100):</label>
+                            <input type="range" id="brightnessSlider" min="-100" max="100" value="0" step="1">
+                            <span id="brightnessValue">0</span>
+                        </div>
+                        
+                        <div class="slider-group">
+                            <label for="contrastSlider">Contrast (-100 to +100):</label>
+                            <input type="range" id="contrastSlider" min="-100" max="100" value="0" step="1">
+                            <span id="contrastValue">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-section">
+                        <h4>🎚️ Level Adjustments</h4>
+                        <div class="slider-group">
+                            <label for="shadowSlider">Shadow Input (0-255):</label>
+                            <input type="range" id="shadowSlider" min="0" max="255" value="33" step="1">
+                            <span id="shadowValue">33</span>
+                        </div>
+                        
+                        <div class="slider-group">
+                            <label for="midtoneSlider">Midtone Input (0.1-9.9):</label>
+                            <input type="range" id="midtoneSlider" min="0.1" max="9.9" value="1.1" step="0.01">
+                            <span id="midtoneValue">1.10</span>
+                        </div>
+                        
+                        <div class="slider-group">
+                            <label for="highlightSlider">Highlight Input (0-255):</label>
+                            <input type="range" id="highlightSlider" min="0" max="255" value="255" step="1">
+                            <span id="highlightValue">255</span>
+                        </div>
+                        
+                        <button onclick="previewLevels()" class="apply-button" style="background: linear-gradient(135deg, #17a2b8, #0c7b8a); margin-bottom: 10px;">👀 Live Preview</button>
+                        <button onclick="saveLevels()" class="apply-button" style="background: linear-gradient(135deg, #28a745, #1e7e34);">💾 Save Image</button>
+                    </div>
+                    
+                    <div id="levelStatus" class="status-message">Select an image to get started</div>
+                </div>
+                
+                <!-- Right Column: Image Preview -->
+                <div class="image-preview-section">
+                    <div class="image-container">
+                        <h4>📸 Original Image</h4>
+                        <img id="originalImage" class="image-preview" src="" style="display: none; max-width: 100%; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0;">
+                        <p id="originalStatus">Select a screenshot and click "📸 Load" to load an image</p>
+                    </div>
+                    
+                    <div class="image-container">
+                        <h4>📊 Processed Image</h4>
+                        <img id="adjustedImage" class="image-preview" src="" style="display: none; max-width: 100%; height: auto; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0;">
+                        <p id="adjustedStatus">Adjust sliders to see real-time preview</p>
+                        <a id="downloadLink" style="display: none; color: #007bff; text-decoration: underline; cursor: pointer;">💾 Download Processed Image</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Combined Test -->
         <div class="combined-test">
             <h3>🚀 Combined Module Test</h3>
@@ -1069,6 +1309,324 @@
 
     <script>
         let logCount = 0;
+
+        // Levels Adjustment Tool Functions
+        function refreshImageList() {
+            showLevelStatus('Refreshing screenshot list...', 'processing');
+            
+            fetch('/api/list-screenshots')
+            .then(response => response.json())
+            .then(data => {
+                const selector = document.getElementById('imageSelector');
+                selector.innerHTML = '';
+                
+                if (data.success && data.screenshots.length > 0) {
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select a screenshot...';
+                    selector.appendChild(defaultOption);
+                    
+                    // Add screenshot options
+                    data.screenshots.forEach(filename => {
+                        const option = document.createElement('option');
+                        option.value = filename;
+                        option.textContent = filename;
+                        selector.appendChild(option);
+                    });
+                    
+                    showLevelStatus(`✅ Found ${data.screenshots.length} screenshots available`, 'success');
+                } else {
+                    selector.innerHTML = '<option value="">No screenshots found</option>';
+                    showLevelStatus('❌ No screenshots found in pic/screenshots/', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing image list:', error);
+                showLevelStatus('❌ Failed to refresh image list', 'error');
+            });
+        }
+
+        function loadSelectedImage() {
+            const selector = document.getElementById('imageSelector');
+            const selectedImage = selector.value;
+            
+            if (!selectedImage) {
+                showLevelStatus('Please select an image first', 'error');
+                return;
+            }
+            
+            showLevelStatus('Loading selected image...', 'processing');
+            
+            fetch(`/api/load-screenshot?filename=${encodeURIComponent(selectedImage)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update original image
+                    document.getElementById('originalImage').src = data.image_path + '?t=' + Date.now();
+                    document.getElementById('originalImage').style.display = 'block';
+                    document.getElementById('originalStatus').textContent = `Loaded: ${selectedImage}`;
+                    
+                    // Clear adjusted image initially, then trigger preview
+                    document.getElementById('adjustedImage').style.display = 'none';
+                    document.getElementById('adjustedStatus').textContent = 'Adjust sliders to see real-time preview';
+                    document.getElementById('downloadLink').style.display = 'none';
+                    
+                    showLevelStatus('✅ Image loaded successfully', 'success');
+                    
+                    // Automatically generate initial preview
+                    setTimeout(() => {
+                        previewLevels();
+                    }, 500);
+                } else {
+                    showLevelStatus(`❌ Failed to load image: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading image:', error);
+                showLevelStatus('❌ Failed to load image', 'error');
+            });
+        }
+
+        function applyLevels() {
+            const selectedImage = document.getElementById('imageSelector').value;
+            if (!selectedImage) {
+                showLevelStatus('Please select and load an image first', 'error');
+                return;
+            }
+            
+            const shadowInput = document.getElementById('shadowSlider').value;
+            const midtoneInput = document.getElementById('midtoneSlider').value;
+            const highlightInput = document.getElementById('highlightSlider').value;
+            
+            showLevelStatus('Processing levels adjustment...', 'processing');
+            
+            const requestData = {
+                filename: selectedImage,
+                shadow_input: parseInt(shadowInput),
+                midtone_input: parseFloat(midtoneInput),
+                highlight_input: parseInt(highlightInput)
+            };
+            
+            fetch('/api/test-levels', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update processed image
+                    if (data.adjusted_path) {
+                        document.getElementById('adjustedImage').src = data.adjusted_path + '?t=' + Date.now();
+                        document.getElementById('adjustedImage').style.display = 'block';
+                        document.getElementById('adjustedStatus').textContent = 
+                            `Processed (${data.processing_time}ms) - Black: ${data.parameters.input_black}, White: ${data.parameters.input_white}, Gamma: ${data.parameters.gamma}`;
+                        
+                        // Show download link
+                        const downloadLink = document.getElementById('downloadLink');
+                        downloadLink.href = data.adjusted_path;
+                        downloadLink.download = data.adjusted_path.split('/').pop();
+                        downloadLink.style.display = 'block';
+                    }
+                    
+                    showLevelStatus(`✅ Levels applied successfully in ${data.processing_time}ms`, 'success');
+                } else {
+                    showLevelStatus(`❌ Failed to apply levels: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error applying levels:', error);
+                showLevelStatus('❌ Failed to apply levels', 'error');
+            });
+        }
+
+        // Preview levels without saving (for real-time updates)
+        function previewLevels() {
+            const selectedImage = document.getElementById('imageSelector').value;
+            if (!selectedImage) {
+                showLevelStatus('Please select and load an image first', 'error');
+                return;
+            }
+            
+            const brightnessValue = document.getElementById('brightnessSlider').value;
+            const contrastValue = document.getElementById('contrastSlider').value;
+            const shadowInput = document.getElementById('shadowSlider').value;
+            const midtoneInput = document.getElementById('midtoneSlider').value;
+            const highlightInput = document.getElementById('highlightSlider').value;
+            
+            showLevelStatus('Generating preview...', 'processing');
+            
+            const requestData = {
+                filename: selectedImage,
+                brightness: parseInt(brightnessValue),
+                contrast: parseInt(contrastValue),
+                shadow_input: parseInt(shadowInput),
+                midtone_input: parseFloat(midtoneInput),
+                highlight_input: parseInt(highlightInput),
+                preview_only: true  // Flag for preview mode
+            };
+            
+            fetch('/api/preview-levels', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update processed image with preview
+                    if (data.preview_path) {
+                        document.getElementById('adjustedImage').src = data.preview_path + '?t=' + Date.now();
+                        document.getElementById('adjustedImage').style.display = 'block';
+                        document.getElementById('adjustedStatus').textContent = 
+                            `Preview (${data.processing_time}ms) - Brightness: ${brightnessValue}, Contrast: ${contrastValue}, Shadow: ${shadowInput}, Midtone: ${midtoneInput}, Highlight: ${highlightInput}`;
+                        
+                        // Hide download link for preview (no permanent file)
+                        document.getElementById('downloadLink').style.display = 'none';
+                    }
+                    
+                    showLevelStatus(`👁️ Preview updated (${data.processing_time}ms)`, 'success');
+                } else {
+                    showLevelStatus(`❌ Preview failed: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error generating preview:', error);
+                showLevelStatus('❌ Failed to generate preview', 'error');
+            });
+        }
+
+        // Save the current levels adjustment as a permanent file
+        function saveLevels() {
+            const selectedImage = document.getElementById('imageSelector').value;
+            if (!selectedImage) {
+                showLevelStatus('Please select and load an image first', 'error');
+                return;
+            }
+            
+            const shadowInput = document.getElementById('shadowSlider').value;
+            const midtoneInput = document.getElementById('midtoneSlider').value;
+            const highlightInput = document.getElementById('highlightSlider').value;
+            
+            showLevelStatus('Saving processed image...', 'processing');
+            
+            const requestData = {
+                filename: selectedImage,
+                shadow_input: parseInt(shadowInput),
+                midtone_input: parseFloat(midtoneInput),
+                highlight_input: parseInt(highlightInput),
+                save_output: true  // Flag for save mode
+            };
+            
+            fetch('/api/test-levels', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update processed image with saved version
+                    if (data.adjusted_path) {
+                        document.getElementById('adjustedImage').src = data.adjusted_path + '?t=' + Date.now();
+                        document.getElementById('adjustedImage').style.display = 'block';
+                        document.getElementById('adjustedStatus').textContent = 
+                            `💾 Saved (${data.processing_time}ms) - Black: ${data.parameters.input_black}, White: ${data.parameters.input_white}, Gamma: ${data.parameters.gamma}`;
+                        
+                        // Show download link for saved file
+                        const downloadLink = document.getElementById('downloadLink');
+                        downloadLink.href = data.adjusted_path;
+                        downloadLink.download = data.adjusted_path.split('/').pop();
+                        downloadLink.style.display = 'block';
+                    }
+                    
+                    showLevelStatus(`✅ Image saved successfully in ${data.processing_time}ms`, 'success');
+                } else {
+                    showLevelStatus(`❌ Failed to save: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving image:', error);
+                showLevelStatus('❌ Failed to save image', 'error');
+            });
+        }
+
+        function showLevelStatus(message, type) {
+            const status = document.getElementById('levelStatus');
+            status.textContent = message;
+            status.className = 'status-message';
+            
+            if (type === 'error') {
+                status.style.background = 'rgba(255, 0, 0, 0.3)';
+            } else if (type === 'success') {
+                status.style.background = 'rgba(0, 255, 0, 0.3)';
+            } else if (type === 'processing') {
+                status.style.background = 'rgba(255, 255, 0, 0.3)';
+            } else {
+                status.style.background = 'rgba(255, 255, 255, 0.1)';
+            }
+        }
+
+        // Update slider values in real time and trigger preview
+        let previewTimer = null;
+        
+        function updateSliderValues() {
+            document.getElementById('brightnessSlider').addEventListener('input', function() {
+                document.getElementById('brightnessValue').textContent = this.value;
+                triggerPreviewUpdate();
+            });
+            
+            document.getElementById('contrastSlider').addEventListener('input', function() {
+                document.getElementById('contrastValue').textContent = this.value;
+                triggerPreviewUpdate();
+            });
+            
+            document.getElementById('shadowSlider').addEventListener('input', function() {
+                document.getElementById('shadowValue').textContent = this.value;
+                triggerPreviewUpdate();
+            });
+            
+            document.getElementById('midtoneSlider').addEventListener('input', function() {
+                document.getElementById('midtoneValue').textContent = parseFloat(this.value).toFixed(2);
+                triggerPreviewUpdate();
+            });
+            
+            document.getElementById('highlightSlider').addEventListener('input', function() {
+                document.getElementById('highlightValue').textContent = this.value;
+                triggerPreviewUpdate();
+            });
+        }
+        
+        function triggerPreviewUpdate() {
+            // Clear existing timer to avoid multiple rapid calls
+            if (previewTimer) {
+                clearTimeout(previewTimer);
+            }
+            
+            // Only trigger preview if an image is loaded
+            const selectedImage = document.getElementById('imageSelector').value;
+            const originalImage = document.getElementById('originalImage');
+            
+            if (selectedImage && originalImage.style.display !== 'none') {
+                // Debounce: wait 300ms after last slider change before updating preview
+                previewTimer = setTimeout(() => {
+                    previewLevels();
+                }, 300);
+            }
+        }
+
+        // Initialize levels tool on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshImageList();
+            updateSliderValues();
+        });
 
         function toggleLegacyMethods() {
             const content = document.getElementById('legacy-content');
@@ -2772,6 +3330,198 @@ Accuracy: ${result.method_info.accuracy}`;
                 // Could add auto-refresh logic here if needed
             }
         }, 5000);
+        
+        // ============================================================================
+        // NEW: Screenshot Processing Diagnostics Event Handlers (CLAUDE.md Compliance)
+        // ============================================================================
+        
+        // Test Single-Screenshot Architecture
+        document.getElementById('test-single-screenshot-architecture').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Testing Architecture...';
+            
+            log('🚀 Testing single-screenshot architecture...');
+            
+            try {
+                const response = await fetch('/api/test-single-screenshot-architecture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Single-screenshot architecture test completed in ${result.statistics.processing_time_ms}ms`, 'success');
+                    displayScreenshotDiagnosticsResults(result, 'single-screenshot');
+                } else {
+                    log(`❌ Single-screenshot architecture test failed: ${result.error}`, 'error');
+                    displayScreenshotDiagnosticsResults(result, 'single-screenshot');
+                }
+            } catch (error) {
+                log(`❌ Architecture test error: ${error.message}`, 'error');
+            }
+            
+            button.disabled = false;
+            button.innerHTML = '🏗️ Test Single-Screenshot Architecture';
+        });
+        
+        // Test Screenshot Performance
+        document.getElementById('test-screenshot-performance').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Benchmarking...';
+            
+            log('📊 Running screenshot performance benchmarks...');
+            
+            try {
+                const response = await fetch('/api/test-screenshot-performance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Performance test completed: ${result.performance_metrics.performance_improvement_percent}% improvement`, 'success');
+                    displayScreenshotDiagnosticsResults(result, 'performance');
+                } else {
+                    log(`❌ Performance test failed: ${result.error}`, 'error');
+                    displayScreenshotDiagnosticsResults(result, 'performance');
+                }
+            } catch (error) {
+                log(`❌ Performance test error: ${error.message}`, 'error');
+            }
+            
+            button.disabled = false;
+            button.innerHTML = '📊 Test Performance Benchmarks';
+        });
+        
+        // Test Screenshot Validation
+        document.getElementById('test-screenshot-validation').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Validating...';
+            
+            log('🔍 Testing screenshot validation...');
+            
+            try {
+                const response = await fetch('/api/test-screenshot-validation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const validationScore = result.statistics.validation_passed;
+                    log(`✅ Validation completed: ${validationScore}/4 checks passed`, 'success');
+                    displayScreenshotDiagnosticsResults(result, 'validation');
+                } else {
+                    log(`❌ Validation test failed: ${result.error}`, 'error');
+                    displayScreenshotDiagnosticsResults(result, 'validation');
+                }
+            } catch (error) {
+                log(`❌ Validation test error: ${error.message}`, 'error');
+            }
+            
+            button.disabled = false;
+            button.innerHTML = '🔍 Test Quality Validation';
+        });
+        
+        // Get Screenshot Cache Info
+        document.getElementById('get-screenshot-cache-info').addEventListener('click', async function() {
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>Getting Info...';
+            
+            log('📈 Getting screenshot cache information...');
+            
+            try {
+                const response = await fetch('/api/screenshot-cache-info', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const cacheStatus = result.cache_status.valid ? 'Active' : 'Inactive';
+                    log(`✅ Cache info retrieved: ${cacheStatus} cache`, 'success');
+                    displayScreenshotDiagnosticsResults(result, 'cache-info');
+                } else {
+                    log(`❌ Cache info failed: ${result.error}`, 'error');
+                    displayScreenshotDiagnosticsResults(result, 'cache-info');
+                }
+            } catch (error) {
+                log(`❌ Cache info error: ${error.message}`, 'error');
+            }
+            
+            button.disabled = false;
+            button.innerHTML = '📈 Get Cache Status';
+        });
+        
+        // Display function for screenshot diagnostics results
+        function displayScreenshotDiagnosticsResults(result, testType) {
+            let html = '';
+            
+            if (result.success) {
+                html += `<div class="test-section">`;
+                html += `<h5>🚀 ${testType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Results</h5>`;
+                
+                // Test-specific content
+                if (testType === 'single-screenshot') {
+                    html += `<div class="stats-grid">`;
+                    html += `<div class="stat-item"><strong>📸 Screenshot:</strong> ${result.screenshot_file}</div>`;
+                    html += `<div class="stat-item"><strong>⚡ Cache Valid:</strong> ${result.cache_performance.cache_valid ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>🚀 Same File Reused:</strong> ${result.cache_performance.same_file_reused ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>⏱️ Cache Reuse Time:</strong> ${result.cache_performance.cache_reuse_time_ms}ms</div>`;
+                    html += `<div class="stat-item"><strong>📊 Performance Mode:</strong> ${result.session_info.performance_mode}</div>`;
+                    html += `<div class="stat-item"><strong>🎯 Architecture Benefit:</strong> ${result.statistics.architecture_benefit}</div>`;
+                    html += `</div>`;
+                } else if (testType === 'performance') {
+                    html += `<div class="stats-grid">`;
+                    html += `<div class="stat-item"><strong>📸 Screenshot:</strong> ${result.screenshot_file}</div>`;
+                    html += `<div class="stat-item"><strong>⚡ Traditional Avg:</strong> ${result.performance_metrics.traditional_avg_ms}ms</div>`;
+                    html += `<div class="stat-item"><strong>🚀 Optimized:</strong> ${result.performance_metrics.optimized_time_ms}ms</div>`;
+                    html += `<div class="stat-item"><strong>📈 Improvement:</strong> ${result.performance_metrics.performance_improvement_percent}%</div>`;
+                    html += `<div class="stat-item"><strong>🎯 Cards Detected:</strong> ${result.analysis_results.cards_detected}</div>`;
+                    html += `<div class="stat-item"><strong>👤 Avatars Detected:</strong> ${result.analysis_results.avatars_detected}</div>`;
+                    html += `</div>`;
+                } else if (testType === 'validation') {
+                    html += `<div class="stats-grid">`;
+                    html += `<div class="stat-item"><strong>📸 Screenshot:</strong> ${result.screenshot_file}</div>`;
+                    html += `<div class="stat-item"><strong>✅ Overall Valid:</strong> ${result.quality_score.overall_valid ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>📁 File Integrity:</strong> ${result.quality_score.file_integrity ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>📏 Dimensions:</strong> ${result.validation_results.width}x${result.validation_results.height}</div>`;
+                    html += `<div class="stat-item"><strong>📋 Format:</strong> ${result.validation_results.image_format}</div>`;
+                    html += `<div class="stat-item"><strong>📊 Validation Score:</strong> ${result.statistics.validation_passed}/4</div>`;
+                    html += `</div>`;
+                } else if (testType === 'cache-info') {
+                    html += `<div class="stats-grid">`;
+                    html += `<div class="stat-item"><strong>🚀 Cache Status:</strong> ${result.cache_status.valid ? '✅ Active' : '❌ Inactive'}</div>`;
+                    html += `<div class="stat-item"><strong>⏱️ Cache Age:</strong> ${result.cache_status.age_seconds ? result.cache_status.age_seconds.toFixed(1) + 's' : 'N/A'}</div>`;
+                    html += `<div class="stat-item"><strong>📁 File Exists:</strong> ${result.cache_status.file_exists ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>🖥️ System:</strong> ${result.system_info.system_platform}</div>`;
+                    html += `<div class="stat-item"><strong>🎯 Window Detected:</strong> ${result.system_info.window_detected ? '✅' : '❌'}</div>`;
+                    html += `<div class="stat-item"><strong>⚙️ Cache Config:</strong> ${result.cache_configuration.cache_expiry_seconds}s expiry</div>`;
+                    html += `</div>`;
+                }
+                
+                // Method information
+                if (result.method_info) {
+                    html += `<div class="method-info">`;
+                    html += `<h6>🔧 Method Details</h6>`;
+                    html += `<div><strong>Module:</strong> ${result.method_info.module_path}</div>`;
+                    html += `<div><strong>Technique:</strong> ${result.method_info.technique}</div>`;
+                    html += `<div><strong>Features:</strong> ${result.method_info.features}</div>`;
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+            } else {
+                html += `<div class="error-message">❌ Test Failed: ${result.error}</div>`;
+            }
+            
+            document.getElementById('screenshot-diagnostics-results').innerHTML = 
+                `<div class="results-header">🚀 Screenshot Diagnostics Results</div><div class="results-content">${html}</div>`;
+        }
     </script>
 </body>
 </html>

@@ -128,16 +128,23 @@ matplotlib.use('Agg')  # Use non-GUI backend to prevent threading issues
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime
 
+# Tool class import (Human Structural Logic: Repeatedly-called functionality = Tool Class)
+try:
+    from m_screenshot_finder_tool import cWeChat_Screenshot_Finder
+except ImportError:
+    # Fallback for environments where tool class not available
+    cWeChat_Screenshot_Finder = None
+
 # Import consolidated modular components
 try:
-    from . import screenshot_processor
+    from . import m_screenshot_processor
     from . import visualization_engine
     from . import image_utils
     SCREENSHOT_AVAILABLE = True
 except ImportError:
     # Fallback imports for direct execution
     try:
-        import screenshot_processor
+        import modules.m_screenshot_processor as m_screenshot_processor
         import visualization_engine
         import image_utils
         SCREENSHOT_AVAILABLE = True
@@ -731,15 +738,15 @@ class cLeftBoundaryDetector:
     - Range: Typically 50-150px from left edge
     
     🔧 ALGORITHM:
-    1. Load image and focus on left 65% (conversation area)
+    1. Load image and focus on left 15% (to find avatar column start)
     2. Apply Sobel edge detection to find vertical edges
     3. Create 1D intensity profile by averaging gradients
     4. Find strongest edge peak using Gaussian smoothing
-    5. Apply 8px offset for actual boundary position
+    5. Apply 10px LEFT offset for actual boundary (10px before avatar start)
     
     📊 KEY PARAMETERS:
-    - CONVERSATION_WIDTH_RATIO = 0.65  # Search left 65% of screen
-    - SIDEBAR_OFFSET = 8               # Pixels offset from edge to boundary
+    - CONVERSATION_WIDTH_RATIO = 0.15  # Search left 15% to find avatar left edge
+    - SIDEBAR_OFFSET = 10              # Pixels offset LEFT from edge (10px before avatar)
     - EDGE_THRESHOLD_LOW = 30          # Minimum edge strength
     
     🎨 VISUAL OUTPUT:
@@ -766,12 +773,12 @@ class cLeftBoundaryDetector:
     def __init__(self, debug_mode: bool = False):
         # Debug mode control for visualization generation
         self.debug_mode = debug_mode
-        
+
         # Edge detection parameters
-        self.CONVERSATION_WIDTH_RATIO = 0.65  # Focus on left 65% of screen where cards are
+        self.CONVERSATION_WIDTH_RATIO = 0.15  # Focus on left 15% to find avatar column start
         self.EDGE_THRESHOLD_LOW = 30
         self.EDGE_THRESHOLD_HIGH = 100
-        self.SIDEBAR_OFFSET = 8  # Offset from detected edge to actual boundary
+        self.SIDEBAR_OFFSET = 10  # Offset LEFT from detected edge (10px before avatar start)
         
     def detect_left_boundary(self, image_path: str) -> Optional[int]:
         """
@@ -1738,7 +1745,10 @@ class cBoundaryCoordinator:
     
     def get_latest_screenshot(self, screenshot_dir: str = "pic/screenshots") -> Optional[str]:
         """
+        🔄 BACKWARD COMPATIBILITY WRAPPER
+        
         Find the latest WeChat screenshot in the specified directory
+        Uses tool class implementation for consistency (Human Structural Logic: Tool Class pattern)
         
         Args:
             screenshot_dir: Directory to search for screenshots
@@ -1746,6 +1756,15 @@ class cBoundaryCoordinator:
         Returns:
             Path to the latest screenshot file, or None if not found
         """
+        # Use tool class if available (Human Structural Logic: Repeatedly-called functionality = Tool Class)
+        if cWeChat_Screenshot_Finder is not None:
+            try:
+                finder = cWeChat_Screenshot_Finder()
+                return finder.get_latest_screenshot(screenshot_dir)
+            except Exception as e:
+                print(f"⚠️ Tool class failed, using fallback: {e}")
+        
+        # Fallback implementation for environments where tool class not available
         if not os.path.exists(screenshot_dir):
             print(f"⚠️ Screenshot directory not found: {screenshot_dir}")
             return None
@@ -4824,10 +4843,10 @@ def fcomplete_card_analysis(image_path: str, debug_mode: bool = True) -> Optiona
 
 # Import screenshot processing functions from consolidated screenshot_processor module
 if SCREENSHOT_AVAILABLE:
-    capture_and_process_screenshot = screenshot_processor.fcapture_and_process_screenshot
-    process_screenshot_file = screenshot_processor.fprocess_screenshot_file
-    process_current_wechat_window = screenshot_processor.fprocess_current_wechat_window
-    get_live_card_analysis = screenshot_processor.fget_live_card_analysis
+    capture_and_process_screenshot = m_screenshot_processor.fcapture_and_process_screenshot
+    process_screenshot_file = m_screenshot_processor.fprocess_screenshot_file
+    process_current_wechat_window = m_screenshot_processor.fprocess_current_wechat_window
+    get_live_card_analysis = m_screenshot_processor.fget_live_card_analysis
 else:
     # Legacy inline implementations for backward compatibility
     def capture_and_process_screenshot(output_dir: str = "pic/screenshots", 
@@ -4857,7 +4876,7 @@ else:
             
             # Step 1: Capture fresh screenshot
             print("\n📸 Phase 1: Capturing WeChat screenshot...")
-            screenshot_path = screenshot_processor.fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
+            screenshot_path = m_screenshot_processor.fcapture_screenshot(output_dir=output_dir, filename=custom_filename)
             
             if not screenshot_path:
                 print("❌ Failed to capture screenshot")
@@ -5060,143 +5079,46 @@ def f_save_coordinates_to_context(image_path: str, analysis_results: Dict) -> No
 
 
 # =============================================================================
-# MAIN DEMO SECTION
+# MANUAL CODE TESTING
 # =============================================================================
-
 if __name__ == "__main__":
+    print("=" * 60)
+    print("Manual Code Testing - CARD PROCESSING MODULE")
+    print("=" * 60)
+    print("🔍 [DEBUG] Smoke test ENTRY")
     
-    print("🎯 Consolidated Card Processing Module (m_Card_Processing.py)")
-    print("="*70)
-    
-    if SCREENSHOT_AVAILABLE:
-        print("\n📸 LIVE WECHAT SCREENSHOT & CARD PROCESSING")
-        print("=" * 50)
+    try:
+        # Simply instantiate each class in order
+        print("   🔧 Testing cWeChatCoordinateContext...")
+        coord_context = cWeChatCoordinateContext("test_image.png", (800, 1200))
+        print("   ✅ cWeChatCoordinateContext instantiated successfully")
         
-        print("\n📸 Phase 1: Capturing fresh WeChat screenshot...")
-        result = capture_and_process_screenshot()
+        print("   🔧 Testing cBoundaryCoordinator...")
+        boundary_coordinator = cBoundaryCoordinator()
+        print("   ✅ cBoundaryCoordinator instantiated successfully")
         
-        if result:
-            screenshot_path, analysis = result
-            print(f"\n✅ Live Analysis Results:")
-            print(f"   Screenshot: {os.path.basename(screenshot_path)}")
-            print(f"   Width: {analysis.get('width_detected')}px")
-            print(f"   Avatars: {analysis.get('avatars_detected')}")
-            print(f"   Cards: {analysis.get('cards_detected')}")
-            
-            # Generate single comprehensive visualization (instead of multiple separate ones)
-            print(f"\n🎨 Phase 2: Generating consolidated debug visualization...")
-            try:
-                # Initialize one detector with debug mode for comprehensive visualization
-                debug_width_detector = cBoundaryCoordinator(debug_mode=True)
-                
-                viz_results = {}
-                
-                # Generate key debug visualizations
-                if analysis.get('width_detected'):
-                    width_viz = debug_width_detector.create_width_visualization(screenshot_path)
-                    if width_viz:
-                        viz_results['width_boundaries'] = width_viz
-                        print(f"   ✅ Width boundaries visualization: {width_viz}")
-                        print(f"   📊 Contains: Width boundaries, pixel analysis, and boundary detection")
-                
-                # Generate Card Avatar Detector visualization (Section 3)
-                if analysis.get('avatars_detected'):
-                    debug_avatar_detector = cCardAvatarDetector(debug_mode=True)
-                    avatar_viz = debug_avatar_detector.create_visualization(screenshot_path)
-                    if avatar_viz:
-                        viz_results['avatar_detection'] = avatar_viz
-                        print(f"   ✅ Avatar detection visualization: {avatar_viz}")
-                        print(f"   📊 Contains: Avatar boundaries, centers, and search areas")
-                
-                # Generate Card Boundary Detector visualization (Section 4)
-                if analysis.get('cards_detected'):
-                    debug_card_detector = cCardBoundaryDetector(debug_mode=True)
-                    card_viz = debug_card_detector.create_card_visualization(screenshot_path)
-                    if card_viz:
-                        viz_results['card_boundaries'] = card_viz
-                        print(f"   ✅ Card boundary visualization: {card_viz}")
-                        print(f"   📊 Contains: Card boundaries, avatar positions, and validation data")
-                
-                # Generate Contact Name Boundary Detector visualization (Section 5)
-                if analysis.get('names_detected') is not None:
-                    debug_name_detector = cContactNameBoundaryDetector(debug_mode=True)
-                    name_viz = debug_name_detector.create_name_boundary_visualization(screenshot_path)
-                    if name_viz:
-                        viz_results['name_boundaries'] = name_viz
-                        print(f"   ✅ Contact name boundary visualization: {name_viz}")
-                        print(f"   📊 Contains: Name boundaries, search regions, and detection confidence")
-                
-                # Note: Time visualizations are skipped to prevent excessive file generation.
-                # The width, avatar, card boundary, and name visualizations provide comprehensive debugging coverage.
-                
-                print(f"\n📊 COMPLETE PROCESSING SUMMARY:")
-                print(f"   Original screenshot: {os.path.basename(screenshot_path)}")
-                print(f"   Width detected: {analysis.get('width_detected')}px")
-                print(f"   Avatars found: {analysis.get('avatars_detected')}")
-                print(f"   Cards identified: {analysis.get('cards_detected')}")
-                print(f"   Names detected: {analysis.get('names_detected', 'N/A')}")
-                print(f"   Processing stages: Width → Avatars → Cards → Times → Names")
-                print(f"   Debug visualizations: {len(viz_results)} consolidated files (includes Section 5)")
-                
-                print(f"\n✅ Complete WeChat card analysis pipeline finished!")
-                print(f"   📁 Check pic/screenshots/ for consolidated debug visualization")
-                print(f"   🎯 Final result: Complete analysis with streamlined debug output")
-                    
-            except Exception as e:
-                print(f"⚠️  Visualization generation failed: {e}")
-                print(f"   But basic analysis completed successfully.")
-                
-        else:
-            print("❌ Live capture failed. Trying to process latest available screenshot...")
-            
-            # Fallback: Try to find and process the latest screenshot
-            width_detector = cBoundaryCoordinator(debug_mode=False)
-            latest_screenshot = width_detector.get_latest_screenshot()
-            
-            if latest_screenshot:
-                print(f"\n📁 Found latest screenshot: {os.path.basename(latest_screenshot)}")
-                print("=" * 50)
-                
-                # Process the latest screenshot
-                analysis = process_screenshot_file(latest_screenshot)
-                if analysis:
-                    print(f"\n✅ Analysis Results:")
-                    print(f"   Screenshot: {os.path.basename(latest_screenshot)}")
-                    print(f"   Width: {analysis.get('width_detected')}px")
-                    print(f"   Avatars: {analysis.get('avatars_detected')}")
-                    print(f"   Cards: {analysis.get('cards_detected')}")
-                    
-                    print(f"\n✅ Processing complete using latest screenshot!")
-                else:
-                    print("❌ Failed to process latest screenshot")
-            else:
-                print("❌ No screenshots found. Make sure WeChat is running and try again.")
-    
-    else:
-        print("\n❌ SCREENSHOT CAPTURE NOT AVAILABLE")
-        print("=" * 50)
-        print("⚠️  Screenshot module not available.")
-        print("💡 Please ensure the m_ScreenShot_WeChatWindow module is properly installed.")
-        print("💡 Required dependencies: pyautogui, Quartz (macOS), easyocr")
+        print("   🔧 Testing cCardAvatarDetector...")
+        avatar_detector = cCardAvatarDetector()
+        print("   ✅ cCardAvatarDetector instantiated successfully")
         
-        # Try to process existing screenshots as fallback
-        width_detector = cBoundaryCoordinator(debug_mode=False)
-        latest_screenshot = width_detector.get_latest_screenshot()
+        print("   🔧 Testing cCardBoundaryDetector...")
+        card_detector = cCardBoundaryDetector()
+        print("   ✅ cCardBoundaryDetector instantiated successfully")
         
-        if latest_screenshot:
-            print(f"\n📁 Fallback: Processing existing screenshot...")
-            print(f"   Using: {os.path.basename(latest_screenshot)}")
-            
-            analysis = process_screenshot_file(latest_screenshot)
-            if analysis:
-                print(f"\n✅ Analysis Results (from existing file):")
-                print(f"   Width: {analysis.get('width_detected')}px")
-                print(f"   Avatars: {analysis.get('avatars_detected')}")
-                print(f"   Cards: {analysis.get('cards_detected')}")
-            else:
-                print("❌ Failed to process existing screenshot")
-        else:
-            print("❌ No existing screenshots found either.")
-    
-    print(f"\n✅ Consolidated Card Processing Module execution complete!")
-    print("="*70)
+        print("   🔧 Testing cContactNameBoundaryDetector...")
+        name_detector = cContactNameBoundaryDetector()
+        print("   ✅ cContactNameBoundaryDetector instantiated successfully")
+        
+        print("   🔧 Testing cTimeBoxDetector...")
+        time_detector = cTimeBoxDetector()
+        print("   ✅ cTimeBoxDetector instantiated successfully")
+        
+        print("   🔧 Testing cCoordinateConverter...")
+        converter = cCoordinateConverter()
+        print("   ✅ cCoordinateConverter instantiated successfully")
+        
+        print("🏁 [DEBUG] Smoke test PASSED")
+        
+    except Exception as e:
+        print(f"   ❌ [ERROR] Smoke test FAILED: {str(e)}")
+        print("🏁 [DEBUG] Smoke test FAILED")

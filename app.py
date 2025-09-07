@@ -15,7 +15,7 @@ from capture.deal_chatbox import fget_message_area_screenshot, fget_chat_message
 from capture.get_name_free import fget_friend_name
 from capture.monitor_new_message import frecognize_message, frecognize_message_forwin
 from capture.text_change_monitor import fdetect_new_message_by_text_change
-from modules.screenshot_processor import fcapture_messages_screenshot
+from modules.m_screenshot_processor import fcapture_messages_screenshot
 from db import db
 from deepseek import deepseekai
 

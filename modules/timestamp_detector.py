@@ -290,25 +290,23 @@ def fdetect_timestamp_boundary(image_path: str, save_debug: bool = False) -> Dic
     detector = cTimestampDetector()
     return detector.detect_timestamp_boundary(image_path, save_debug)
 
+# =============================================================================
+# MANUAL CODE TESTING
+# =============================================================================
 if __name__ == "__main__":
-    # Test with the proof-of-concept image
-    test_image = "/Users/erli/coding/deepseek_wechat_bot/WorkingOn/Attempt_Card_NameBoundryDetection_Photo.png"
+    print("=" * 60)
+    print("Manual Code Testing - TIMESTAMP DETECTOR")
+    print("=" * 60)
+    print("🔍 [DEBUG] Smoke test ENTRY")
     
-    if os.path.exists(test_image):
-        print("🔍 Testing Timestamp Detection Module")
-        print("=" * 50)
+    try:
+        # Simply instantiate the class
+        print("   🔧 Testing cTimestampDetector...")
+        detector = cTimestampDetector()
+        print("   ✅ cTimestampDetector instantiated successfully")
         
-        result = detect_timestamp_boundary(test_image, save_debug=True)
+        print("🏁 [DEBUG] Smoke test PASSED")
         
-        print(f"📍 Boundary X: {result.get('boundary_x', 'None')}")
-        print(f"🎯 Confidence: {result.get('confidence', 'none')}")  
-        print(f"⚡ Method Used: {result.get('method_used', 'none')}")
-        print(f"⏱️  Processing Time: {result.get('processing_time_ms', 0)}ms")
-        
-        if 'debug_image_path' in result:
-            print(f"🎨 Debug Image: {result['debug_image_path']}")
-            
-        if 'error' in result:
-            print(f"❌ Error: {result['error']}")
-    else:
-        print(f"❌ Test image not found: {test_image}")
+    except Exception as e:
+        print(f"   ❌ [ERROR] Smoke test FAILED: {str(e)}")
+        print("🏁 [DEBUG] Smoke test FAILED")

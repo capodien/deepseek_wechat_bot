@@ -1,10 +1,10 @@
 {
-  "last_updated": "2025-09-06T17:09:01.268450",
-  "screenshot_path": "20250906_170900_WeChat.png",
+  "last_updated": "2025-09-08T00:26:58.278425",
+  "screenshot_path": "20250908_002657_WeChat.png",
   "processing_info": {
-    "source_image": "20250906_170900_WeChat.png",
-    "full_path": "pic/screenshots/20250906_170900_WeChat.png",
-    "processing_timestamp": "20250906_170900"
+    "source_image": "20250908_002657_WeChat.png",
+    "full_path": "pic/screenshots/20250908_002657_WeChat.png",
+    "processing_timestamp": "20250908_002657"
   },
   "image_dimensions": {
     "width": 1440,
@@ -18,9 +18,9 @@
   },
   "coordinates": {
     "conversation_area": {
-      "x": 113,
+      "x": 111,
       "y": 0,
-      "width": 316,
+      "width": 318,
       "height": 845,
       "confidence": 0.9
     },
